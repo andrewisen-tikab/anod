@@ -4,7 +4,28 @@
   "categories": {
     "correctness": "error"
   },
-  "rules": {},
+  "rules": {
+    "no-control-regex": "off",
+    "no-unsafe-finally": "off",
+    "no-unused-expressions": "off",
+    "require-yield": "off",
+    "typescript/no-this-alias": "off",
+    "unicorn/no-new-array": "off",
+    "unicorn/no-thenable": "off"
+  },
+  "overrides": [
+    {
+      "files": [
+        "packages/*/test/**",
+        "packages/*/bench/**",
+        "packages/*/memory/**",
+        "packages/*/externs/**"
+      ],
+      "rules": {
+        "no-unused-vars": "off"
+      }
+    }
+  ],
   "env": {
     "builtin": true
   }

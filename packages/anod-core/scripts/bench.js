@@ -1,5 +1,5 @@
 import { rolldown } from "rolldown";
-import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "fs";
+import { writeFileSync, mkdirSync, readdirSync } from "fs";
 import { join, basename, dirname } from "path";
 import { fileURLToPath } from "url";
 

@@ -943,8 +943,8 @@ SignalProto.join = ComputeProto.join = function (
 function keys(
   source: unknown[],
   _node: ICompute,
-  seed: unknown,
-  args: unknown,
+  _seed: unknown,
+  _args: unknown,
 ): IterableIterator<number> {
   return source.keys();
 }
@@ -1076,7 +1076,7 @@ SignalProto.reduceRight = ComputeProto.reduceRight = function (
 
 // --- slice ---
 
-function slice0(source: unknown[], _node: ICompute, seed: unknown, args: unknown): unknown[] {
+function slice0(source: unknown[], _node: ICompute, _seed: unknown, _args: unknown): unknown[] {
   return source.slice();
 }
 
@@ -1152,8 +1152,8 @@ SignalProto.some = ComputeProto.some = function (
 function values(
   source: unknown[],
   _node: ICompute,
-  seed: unknown,
-  args: unknown,
+  _seed: unknown,
+  _args: unknown,
 ): IterableIterator<unknown> {
   return source.values();
 }

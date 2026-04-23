@@ -7,8 +7,6 @@ import type {
   IEffect,
   IChannel,
   IRoot,
-  CleanupSlot,
-  RecoverSlot,
   ComputeFn,
   EffectFn,
   UpdateFn,
