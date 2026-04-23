@@ -28,26 +28,32 @@
   "types": "./dist/index.d.ts",
   "imports": {
     "#anod": {
-      "src": "./src/index.js",
+      "bun": "./src/index.ts",
+      "src": "./src/index.ts",
       "default": "./dist/index.js"
     },
-    "#anod-src": "./src/index.js",
+    "#anod-src": "./src/index.ts",
     "#test-runner": {
-      "bun": "./test/env/bun.js",
-      "node": "./test/env/node.js",
-      "default": "./test/env/node.js"
+      "bun": "./test/env/bun.ts",
+      "node": "./test/env/node.ts",
+      "default": "./test/env/node.ts"
     }
   },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "src": "./src/index.js",
+      "src": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./internal": {
       "types": "./dist/internal.d.ts",
-      "src": "./src/internal.js",
+      "src": "./src/internal.ts",
       "import": "./dist/internal.js"
+    },
+    "./internal-types": {
+      "types": "./dist/types.d.ts",
+      "src": "./src/types.ts",
+      "import": "./dist/types.js"
     }
   },
   "scripts": {

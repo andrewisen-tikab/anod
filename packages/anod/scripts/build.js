@@ -9,7 +9,7 @@ async function build() {
 
   const bundle = await rolldown({
     input: {
-      index: "./src/anod.js",
+      index: "./src/anod.ts",
     },
     external: ["anod-core", "anod-list"],
   });
@@ -29,8 +29,6 @@ async function build() {
       fs.writeFileSync(path.resolve(outputDir, chunk.fileName), chunk.code);
     }
   }
-
-  fs.copyFileSync("./types/index.d.ts", path.resolve(outputDir, "index.d.ts"));
 
   console.log("Success! Output written to dist/");
 }

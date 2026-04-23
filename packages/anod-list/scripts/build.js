@@ -13,7 +13,7 @@ async function build() {
 
   const bundle = await rolldown({
     input: {
-      index: "./src/list.js",
+      index: "./src/list.ts",
     },
     external: ["anod-core", "anod-core/internal"],
   });
@@ -69,9 +69,6 @@ async function build() {
 
   /** Save the combined property map (signal's entries + any new list-specific ones) */
   fs.writeFileSync(nameCachePath, JSON.stringify(nameCache, null, 2));
-
-  /** Copy type declarations to dist */
-  fs.copyFileSync("./types/list.d.ts", path.resolve(outputDir, "index.d.ts"));
 
   console.log("Success! Output written to dist/");
 }

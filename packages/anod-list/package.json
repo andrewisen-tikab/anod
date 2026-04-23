@@ -28,11 +28,14 @@
   "types": "./dist/index.d.ts",
   "imports": {
     "#test-runner": {
-      "bun": "./test/env/bun.js",
-      "node": "./test/env/node.js",
-      "default": "./test/env/node.js"
+      "bun": "./test/env/bun.ts",
+      "node": "./test/env/node.ts",
+      "default": "./test/env/node.ts"
     },
-    "#list": "./dist/index.js"
+    "#list": {
+      "bun": "./src/list.ts",
+      "default": "./dist/index.js"
+    }
   },
   "exports": {
     ".": {
@@ -40,7 +43,7 @@
       "import": "./dist/index.js"
     },
     "./src": {
-      "import": "./src/list.js"
+      "import": "./src/list.ts"
     }
   },
   "scripts": {

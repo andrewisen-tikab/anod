@@ -1,15 +1,16 @@
 {
   "compilerOptions": {
-    "composite": true,
-    "noEmit": true,
-    "declaration": true,
-    "declarationMap": true,
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
     "module": "NodeNext",
     "moduleResolution": "NodeNext"
   },
+  "files": [],
   "references": [
-    { "path": "./packages/anod" },
     { "path": "./packages/anod-core" },
-    { "path": "./packages/anod-list" }
+    { "path": "./packages/anod-list" },
+    { "path": "./packages/anod" }
   ]
 }
