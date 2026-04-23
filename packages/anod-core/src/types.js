@@ -1,7 +1,7 @@
 /**
  * @interface
  */
-function Disposer() { }
+function Disposer() {}
 /** @package @type {number} */
 Disposer.prototype._flag;
 /**
@@ -9,13 +9,13 @@ Disposer.prototype._flag;
  */
 Disposer.prototype._cleanup;
 /** @package @returns {void} */
-Disposer.prototype._dispose = function () { };
+Disposer.prototype._dispose = function () {};
 
 /**
  * @interface
  * @extends {Disposer}
  */
-function Owner() { }
+function Owner() {}
 /** @package @type {(function(): void) | Array<(function(): void)> | null} */
 Owner.prototype._cleanup;
 /** @package @type {Array<Receiver> | null} */
@@ -32,7 +32,7 @@ Owner.prototype._recover;
  * @template T
  * @extends {Disposer}
  */
-function Sender() { }
+function Sender() {}
 /** @package @type {T} */
 Sender.prototype._value;
 /** @package @type {number} */
@@ -52,7 +52,7 @@ Sender.prototype._ctime;
  * @interface
  * @extends {Disposer}
  */
-function Receiver() { }
+function Receiver() {}
 /** @package @type {Sender | null} */
 Receiver.prototype._dep1;
 /** @package @type {number} */
@@ -62,25 +62,24 @@ Receiver.prototype._deps;
 /** @package @type {number} */
 Receiver.prototype._time;
 /** @package @param {number} time @returns {void} */
-Receiver.prototype._setStale = function (time) { };
-
+Receiver.prototype._setStale = function (time) {};
 
 /**
  * @interface
  * @template T
  */
-function ReadonlySignal() { }
+function ReadonlySignal() {}
 
 /**
  * @throws
  * @returns {T}
  */
-ReadonlySignal.prototype.val = function() { };
+ReadonlySignal.prototype.val = function () {};
 
 /**
  * @returns {void}
  */
-ReadonlySignal.prototype.dispose = function() { };
+ReadonlySignal.prototype.dispose = function () {};
 
 /**
  * @interface
@@ -88,14 +87,14 @@ ReadonlySignal.prototype.dispose = function() { };
  * @extends {Sender<T>}
  * @extends {ReadonlySignal<T>}
  */
-function ISignal() { }
+function ISignal() {}
 
 /**
  *
  * @param {T} value
  * @returns {void}
  */
-ISignal.prototype.set = function (value) { };
+ISignal.prototype.set = function (value) {};
 
 /**
  * @interface
@@ -104,23 +103,23 @@ ISignal.prototype.set = function (value) { };
  * @extends {Receiver}
  * @extends {ReadonlySignal<T>}
  */
-function ICompute() { }
+function ICompute() {}
 /** @public @returns {boolean} */
-ICompute.prototype.error = function () { };
+ICompute.prototype.error = function () {};
 /** @public @returns {boolean} */
-ICompute.prototype.loading = function () { };
+ICompute.prototype.loading = function () {};
 
 /**
  * @interface
  * @extends {Owner}
  * @extends {Receiver}
  */
-function IEffect() { }
+function IEffect() {}
 /** @public @returns {void} */
-IEffect.prototype.dispose = function () { };
+IEffect.prototype.dispose = function () {};
 /** @public @returns {boolean} */
-IEffect.prototype.error = function () { };
+IEffect.prototype.error = function () {};
 /** @public @returns {boolean} */
-IEffect.prototype.loading = function () { };
+IEffect.prototype.loading = function () {};
 
 export { Disposer, Owner, Sender, Receiver, ISignal, ICompute, IEffect };

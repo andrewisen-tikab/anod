@@ -1,7 +1,10 @@
 import { describe, test, expect } from "#test-runner";
 import { signal, root } from "#anod";
 
-let c; root((_c) => { c = _c; });
+let c;
+root((_c) => {
+  c = _c;
+});
 
 const tick = () => Promise.resolve();
 const settle = () => tick().then(tick).then(tick);
@@ -18,8 +21,20 @@ describe("channel cleanup", () => {
      * stale activation.
      */
     let resolveA, resolveB;
-    const taskA = c.task((cx) => cx.suspend(new Promise((r) => { resolveA = r; })));
-    const taskB = c.task((cx) => cx.suspend(new Promise((r) => { resolveB = r; })));
+    const taskA = c.task((cx) =>
+      cx.suspend(
+        new Promise((r) => {
+          resolveA = r;
+        }),
+      ),
+    );
+    const taskB = c.task((cx) =>
+      cx.suspend(
+        new Promise((r) => {
+          resolveB = r;
+        }),
+      ),
+    );
     await settle();
 
     const s1 = signal(1);
@@ -70,8 +85,20 @@ describe("channel cleanup", () => {
     const s1 = signal(1);
     let resolveA, resolveB;
 
-    const taskA = c.task((cx) => cx.suspend(new Promise((r) => { resolveA = r; })));
-    const taskB = c.task((cx) => cx.suspend(new Promise((r) => { resolveB = r; })));
+    const taskA = c.task((cx) =>
+      cx.suspend(
+        new Promise((r) => {
+          resolveA = r;
+        }),
+      ),
+    );
+    const taskB = c.task((cx) =>
+      cx.suspend(
+        new Promise((r) => {
+          resolveB = r;
+        }),
+      ),
+    );
     await settle();
 
     let observed = [];
@@ -111,8 +138,20 @@ describe("channel cleanup", () => {
      */
     const s1 = signal(1);
     let resolveA, resolveB;
-    const taskA = c.task((cx) => cx.suspend(new Promise((r) => { resolveA = r; })));
-    const taskB = c.task((cx) => cx.suspend(new Promise((r) => { resolveB = r; })));
+    const taskA = c.task((cx) =>
+      cx.suspend(
+        new Promise((r) => {
+          resolveA = r;
+        }),
+      ),
+    );
+    const taskB = c.task((cx) =>
+      cx.suspend(
+        new Promise((r) => {
+          resolveB = r;
+        }),
+      ),
+    );
     await settle();
 
     let observed = [];

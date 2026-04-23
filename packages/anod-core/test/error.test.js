@@ -1,7 +1,10 @@
 import { describe, test, expect } from "#test-runner";
 import { signal, root, REFUSE, PANIC, FATAL } from "#anod";
 
-let c; root((_c) => { c = _c; });
+let c;
+root((_c) => {
+  c = _c;
+});
 
 const tick = () => Promise.resolve();
 const settle = () => tick().then(tick).then(tick);
@@ -91,7 +94,9 @@ describe("error types", () => {
       expect(c1.get()).toBe(1);
 
       s1.set(20);
-      try { c1.get(); } catch (e) { }
+      try {
+        c1.get();
+      } catch (e) {}
       expect(c1.error).not.toBeNull();
 
       /** Fix the input — error clears, value updates. */

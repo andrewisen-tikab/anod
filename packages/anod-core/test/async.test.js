@@ -1,7 +1,10 @@
 import { describe, test, expect } from "#test-runner";
 import { signal, root } from "#anod";
 
-let c; root((_c) => { c = _c; });
+let c;
+root((_c) => {
+  c = _c;
+});
 
 const tick = () => Promise.resolve();
 /** suspend() adds one extra microtask layer; settle needs 2 ticks for
@@ -16,7 +19,7 @@ describe("async", () => {
         return c.suspend(
           new Promise((r) => {
             resolve = r;
-          })
+          }),
         );
       });
 
@@ -34,7 +37,7 @@ describe("async", () => {
         return c.suspend(
           new Promise((r) => {
             resolve = r;
-          })
+          }),
         );
       }, 0);
 
@@ -132,7 +135,7 @@ describe("async", () => {
         return c.suspend(
           new Promise((r) => {
             resolvers[v] = r;
-          })
+          }),
         );
       });
 
@@ -166,7 +169,7 @@ describe("async", () => {
           return new Promise((r) => {
             resolver = r;
           });
-        }
+        },
       };
 
       const c1 = c.task(() => {
@@ -191,7 +194,7 @@ describe("async", () => {
         },
         return() {
           return Promise.resolve({ done: true });
-        }
+        },
       };
 
       const c1 = c.task(() => {
@@ -232,7 +235,7 @@ describe("async", () => {
         },
         return() {
           return Promise.resolve({ done: true });
-        }
+        },
       };
 
       const c1 = c.task(() => {
@@ -285,7 +288,7 @@ describe("async", () => {
         return() {
           returnCalled = true;
           return Promise.resolve({ value: undefined, done: true });
-        }
+        },
       };
 
       const s1 = signal(true);
@@ -624,7 +627,7 @@ describe("async", () => {
         await c.suspend(
           new Promise((r) => {
             resolve = r;
-          })
+          }),
         );
         continued = true;
         return 99;
@@ -650,7 +653,7 @@ describe("async", () => {
           await c.suspend(
             new Promise((r) => {
               firstResolve = r;
-            })
+            }),
           );
           firstContinued = true;
           return v;
@@ -823,7 +826,11 @@ describe("async", () => {
         runs++;
         const a = c.val(s1);
         const b = c.defer(s2);
-        return c.suspend(new Promise((r) => { resolve = r; }));
+        return c.suspend(
+          new Promise((r) => {
+            resolve = r;
+          }),
+        );
       });
       expect(runs).toBe(1);
 
@@ -851,7 +858,7 @@ describe("async", () => {
         return c.suspend(
           new Promise((r) => {
             resolve = r;
-          })
+          }),
         );
       });
 
@@ -951,7 +958,7 @@ describe("async", () => {
         return c.suspend(
           new Promise((r) => {
             resolve = r;
-          })
+          }),
         );
       });
       expect(taskA.loading).toBe(true);
@@ -974,7 +981,7 @@ describe("async", () => {
         return c.suspend(
           new Promise((r) => {
             resolve = r;
-          })
+          }),
         );
       });
 
@@ -1033,7 +1040,7 @@ describe("async", () => {
         return c.suspend(
           new Promise((r) => {
             resolve = r;
-          })
+          }),
         );
       });
 
@@ -1061,7 +1068,7 @@ describe("async", () => {
         return c.suspend(
           new Promise((r) => {
             resolve = r;
-          })
+          }),
         );
       });
       const taskB = c.task(async (c) => {
@@ -1107,7 +1114,7 @@ describe("async", () => {
         return c.suspend(
           new Promise((r) => {
             resolve = r;
-          })
+          }),
         );
       });
 
@@ -1140,13 +1147,13 @@ describe("async", () => {
           return c.suspend(
             new Promise((r) => {
               resolve1 = r;
-            })
+            }),
           );
         }
         return c.suspend(
           new Promise((r) => {
             resolve2 = r;
-          })
+          }),
         );
       }, 0);
       let effectRuns = 0;
@@ -1187,7 +1194,7 @@ describe("async", () => {
         return c.suspend(
           new Promise((r) => {
             resolve = r;
-          })
+          }),
         );
       }, 0);
       const c2 = c.compute((c) => c.val(c1) * 10);
@@ -1225,7 +1232,7 @@ describe("async", () => {
         return c.suspend(
           new Promise((r) => {
             resolve = r;
-          })
+          }),
         );
       }, 0);
       let runs = 0;
@@ -1259,7 +1266,11 @@ describe("async", () => {
     test("returns true when task is loading", async () => {
       let resolve;
       const taskA = c.task((c) => {
-        return c.suspend(new Promise((r) => { resolve = r; }));
+        return c.suspend(
+          new Promise((r) => {
+            resolve = r;
+          }),
+        );
       });
       let result = null;
 
@@ -1289,7 +1300,11 @@ describe("async", () => {
     test("subscribes to the task: effect re-runs on settle", async () => {
       let resolve;
       const taskA = c.task((c) => {
-        return c.suspend(new Promise((r) => { resolve = r; }));
+        return c.suspend(
+          new Promise((r) => {
+            resolve = r;
+          }),
+        );
       });
       let runs = 0;
       let observed = null;
@@ -1314,8 +1329,20 @@ describe("async", () => {
 
     test("works with array of tasks", async () => {
       let resolveA, resolveB;
-      const taskA = c.task((c) => c.suspend(new Promise((r) => { resolveA = r; })));
-      const taskB = c.task((c) => c.suspend(new Promise((r) => { resolveB = r; })));
+      const taskA = c.task((c) =>
+        c.suspend(
+          new Promise((r) => {
+            resolveA = r;
+          }),
+        ),
+      );
+      const taskB = c.task((c) =>
+        c.suspend(
+          new Promise((r) => {
+            resolveB = r;
+          }),
+        ),
+      );
 
       let runs = 0;
       let observed = null;

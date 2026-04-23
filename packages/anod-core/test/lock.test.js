@@ -1,7 +1,10 @@
 import { describe, test, expect } from "#test-runner";
 import { signal, root } from "#anod";
 
-let c; root((_c) => { c = _c; });
+let c;
+root((_c) => {
+  c = _c;
+});
 
 const tick = () => Promise.resolve();
 const settle = () => tick().then(tick).then(tick);
@@ -36,7 +39,11 @@ describe("lock", () => {
         runs++;
         let val = c.val(s1);
         c.lock();
-        await c.suspend(new Promise((r) => { resolve = r; }));
+        await c.suspend(
+          new Promise((r) => {
+            resolve = r;
+          }),
+        );
         return val * 10;
       });
       await settle();
@@ -65,7 +72,11 @@ describe("lock", () => {
       const t1 = c.task(async (c) => {
         let val = c.val(s1);
         c.lock();
-        await c.suspend(new Promise((r) => { resolve = r; }));
+        await c.suspend(
+          new Promise((r) => {
+            resolve = r;
+          }),
+        );
         return val;
       });
       await settle();
@@ -131,7 +142,11 @@ describe("lock", () => {
         let val = c.val(s1);
         c.lock();
         steps.push("start:" + val);
-        await c.suspend(new Promise((r) => { resolve = r; }));
+        await c.suspend(
+          new Promise((r) => {
+            resolve = r;
+          }),
+        );
         steps.push("end:" + val);
       });
       await settle();
@@ -162,7 +177,11 @@ describe("lock", () => {
       const t1 = c.task(async (c) => {
         let val = c.val(s1);
         c.lock();
-        await c.suspend(new Promise((r) => { taskResolve = r; }));
+        await c.suspend(
+          new Promise((r) => {
+            taskResolve = r;
+          }),
+        );
         return val * 10;
       });
       await settle();
@@ -188,7 +207,11 @@ describe("lock", () => {
       const t1 = c.task(async (c) => {
         let val = c.val(s1);
         c.lock();
-        await c.suspend(new Promise((r) => { taskResolve = r; }));
+        await c.suspend(
+          new Promise((r) => {
+            taskResolve = r;
+          }),
+        );
         return val * 10;
       });
       await settle();
@@ -226,7 +249,7 @@ describe("lock", () => {
       expect(t1.get()).toBe(20);
       expect(observed).toEqual(["a:10", "b:10", "c:20"]);
     });
-	});
+  });
   describe("dispose while locked", () => {
     test("locked task defers dispose until settlement", async () => {
       let resolve;
@@ -234,9 +257,15 @@ describe("lock", () => {
       let t1;
       const r1 = root((r) => {
         t1 = r.task(async (cx) => {
-          cx.cleanup(() => { cleanupRan = true; });
+          cx.cleanup(() => {
+            cleanupRan = true;
+          });
           cx.lock();
-          await cx.suspend(new Promise((r) => { resolve = r; }));
+          await cx.suspend(
+            new Promise((r) => {
+              resolve = r;
+            }),
+          );
           return 42;
         });
       });
@@ -264,10 +293,16 @@ describe("lock", () => {
       let steps = [];
       const r1 = root((r) => {
         r.spawn(async (cx) => {
-          cx.cleanup(() => { cleanupRan = true; });
+          cx.cleanup(() => {
+            cleanupRan = true;
+          });
           cx.lock();
           steps.push("start");
-          await cx.suspend(new Promise((r) => { resolve = r; }));
+          await cx.suspend(
+            new Promise((r) => {
+              resolve = r;
+            }),
+          );
           steps.push("end");
         });
       });
@@ -292,9 +327,15 @@ describe("lock", () => {
       let t1;
       const r1 = root((r) => {
         t1 = r.task(async (cx) => {
-          cx.cleanup(() => { cleanupRan = true; });
+          cx.cleanup(() => {
+            cleanupRan = true;
+          });
           cx.lock();
-          await cx.suspend(new Promise((r) => { resolve = r; }));
+          await cx.suspend(
+            new Promise((r) => {
+              resolve = r;
+            }),
+          );
           return 99;
         });
       });
@@ -319,7 +360,11 @@ describe("lock", () => {
       const r1 = root((r) => {
         t1 = r.task(async (cx) => {
           cx.lock();
-          await cx.suspend(new Promise((r) => { resolve = r; }));
+          await cx.suspend(
+            new Promise((r) => {
+              resolve = r;
+            }),
+          );
           return 42;
         });
       });
@@ -349,7 +394,11 @@ describe("lock", () => {
         runs++;
         let val = cx.val(s1);
         cx.lock();
-        await cx.suspend(new Promise((r) => { resolve = r; }));
+        await cx.suspend(
+          new Promise((r) => {
+            resolve = r;
+          }),
+        );
         return val * 10;
       });
       await settle();
@@ -381,7 +430,11 @@ describe("lock", () => {
         runs++;
         let val = cx.val(c1);
         cx.lock();
-        await cx.suspend(new Promise((r) => { resolve = r; }));
+        await cx.suspend(
+          new Promise((r) => {
+            resolve = r;
+          }),
+        );
         return val + 100;
       });
       await settle();
@@ -411,7 +464,11 @@ describe("lock", () => {
       const t1 = c.task(async (cx) => {
         let val = cx.val(s1);
         cx.lock();
-        await cx.suspend(new Promise((r) => { resolve = r; }));
+        await cx.suspend(
+          new Promise((r) => {
+            resolve = r;
+          }),
+        );
         return val;
       });
       await settle();
@@ -447,7 +504,11 @@ describe("lock", () => {
         runs++;
         let val = cx.val(s1);
         cx.lock();
-        await cx.suspend(new Promise((r) => { resolve = r; }));
+        await cx.suspend(
+          new Promise((r) => {
+            resolve = r;
+          }),
+        );
         values.push(val);
       });
       await settle();
@@ -481,7 +542,11 @@ describe("lock", () => {
       const t1 = c.task(async (cx) => {
         runs++;
         let val = cx.val(c1);
-        await cx.suspend(new Promise((r) => { resolve = r; }));
+        await cx.suspend(
+          new Promise((r) => {
+            resolve = r;
+          }),
+        );
         return val;
       });
       await settle();
@@ -517,7 +582,11 @@ describe("lock", () => {
       const t1 = c.task(async (cx) => {
         runs++;
         let val = cx.val(c1);
-        await cx.suspend(new Promise((r) => { resolve = r; }));
+        await cx.suspend(
+          new Promise((r) => {
+            resolve = r;
+          }),
+        );
         return val;
       });
       await settle();

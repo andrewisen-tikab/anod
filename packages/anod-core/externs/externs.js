@@ -16,19 +16,19 @@ IteratorResult.prototype.value;
  */
 function IAsyncIterator() {}
 
-/** 
- * @return {!IThenable<!IteratorResult<T>>} 
+/**
+ * @return {!IThenable<!IteratorResult<T>>}
  */
-IAsyncIterator.prototype.next = function() {};
+IAsyncIterator.prototype.next = function () {};
 
-/** 
+/**
  * @param {*=} value
- * @return {!IThenable<!IteratorResult<T>>} 
+ * @return {!IThenable<!IteratorResult<T>>}
  */
-IAsyncIterator.prototype.return = function(value) {};
+IAsyncIterator.prototype.return = function (value) {};
 
-/** 
+/**
  * @param {*=} error
- * @return {!IThenable<!IteratorResult<T>>} 
+ * @return {!IThenable<!IteratorResult<T>>}
  */
-IAsyncIterator.prototype.throw = function(error) {};
+IAsyncIterator.prototype.throw = function (error) {};

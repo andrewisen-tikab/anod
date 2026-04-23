@@ -1,12 +1,4 @@
-import {
-  Disposer,
-  Owner,
-  Sender,
-  Receiver,
-  ISignal,
-  ICompute,
-  IEffect
-} from "./types.js";
+import { Disposer, Owner, Sender, Receiver, ISignal, ICompute, IEffect } from "./types.js";
 
 /* Sender flags (bits 0-6) — readable on any Sender (Signal or Compute).
  * Bits 7+ on a plain Signal are free for extension (e.g. mod encoding
@@ -52,7 +44,6 @@ const OPT_EAGER = FLAG_EAGER;
 
 const OPTIONS = OPT_DEFER | OPT_STABLE | OPT_SETUP | OPT_WEAK | OPT_EAGER;
 
-
 /* Async dispatch kinds — asyncKind() returns one of these so callers can
  * branch without re-sniffing the value. */
 const ASYNC_PROMISE = 1;
@@ -66,10 +57,10 @@ const ASYNC_SYNC = 3;
  * nothing, so the continuation never resumes and the closure is GC'd.
  * @const
  */
-const REGRET = { then: function () { } };
+const REGRET = { then: function () {} };
 
 /** @const */
-const NOOP = function () { };
+const NOOP = function () {};
 
 /**
  * Thrown (synchronously) when an async node's fn returns a non-sync
@@ -644,7 +635,7 @@ function root(fn) {
   };
 
   /** Signal._drop: NOOP — signals don't drop values. */
-  SignalProto._drop = function () { };
+  SignalProto._drop = function () {};
 
   /**
    * Compute._drop: releases cached value and marks STALE. Called
@@ -658,18 +649,14 @@ function root(fn) {
       return;
     }
     this._flag |= FLAG_STALE;
-		this._value = null;
-		if (this._cleanup !== null) {
-			clearCleanup(this._cleanup);
+    this._value = null;
+    if (this._cleanup !== null) {
+      clearCleanup(this._cleanup);
     }
   };
 
   // Disposer#dispose — shared by all four node types
-  RootProto.dispose =
-    SignalProto.dispose =
-    ComputeProto.dispose =
-    EffectProto.dispose =
-    dispose;
+  RootProto.dispose = SignalProto.dispose = ComputeProto.dispose = EffectProto.dispose = dispose;
 
   // Receiver#_read — internal dep tracking, called from val() when listening
   ComputeProto._read = EffectProto._read = _read;
@@ -677,16 +664,28 @@ function root(fn) {
   ComputeProto._readAsync = EffectProto._readAsync = _readAsync;
   ComputeProto.peek = EffectProto.peek = peek;
 
-	let disposed = { get() { return (this._flag & FLAG_DISPOSED) !== 0; } };
+  let disposed = {
+    get() {
+      return (this._flag & FLAG_DISPOSED) !== 0;
+    },
+  };
 
- 	let _disposed = { disposed };
+  let _disposed = { disposed };
   Object.defineProperties(SignalProto, _disposed);
   Object.defineProperties(RootProto, _disposed);
   // IAwaitable — Compute + Effect (getters)
-	let states = {
-		disposed,
-    error: { get() { return (this._flag & FLAG_ERROR) ? this._value : null; } },
-    loading: { get() { return (this._flag & FLAG_LOADING) !== 0; } }
+  let states = {
+    disposed,
+    error: {
+      get() {
+        return this._flag & FLAG_ERROR ? this._value : null;
+      },
+    },
+    loading: {
+      get() {
+        return (this._flag & FLAG_LOADING) !== 0;
+      },
+    },
   };
   Object.defineProperties(ComputeProto, states);
   Object.defineProperties(EffectProto, states);
@@ -859,7 +858,7 @@ function root(fn) {
             }
           }
           node._error(err);
-        }
+        },
       );
       return;
     }
@@ -877,23 +876,17 @@ function root(fn) {
     let time = this._time;
     return promiseOrTask.then(
       function (val) {
-        if (
-          node._time === time &&
-          (!(node._flag & FLAG_DISPOSED) || node._flag & FLAG_LOCK)
-        ) {
+        if (node._time === time && (!(node._flag & FLAG_DISPOSED) || node._flag & FLAG_LOCK)) {
           return val;
         }
         return REGRET;
       },
       function (err) {
-        if (
-          node._time === time &&
-          (!(node._flag & FLAG_DISPOSED) || node._flag & FLAG_LOCK)
-        ) {
+        if (node._time === time && (!(node._flag & FLAG_DISPOSED) || node._flag & FLAG_LOCK)) {
           throw err;
         }
         return REGRET;
-      }
+      },
     );
   }
 
@@ -1063,11 +1056,13 @@ function root(fn) {
      *  ALL tasks from scratch — a previously settled task may
      *  have gone back to loading. */
     let task = tasks[blocked];
-    send(node, task,
+    send(
+      node,
+      task,
       function () {
         _stepArray(node, tasks, results, resolve, reject);
       },
-      reject
+      reject,
     );
   }
 
@@ -1167,8 +1162,8 @@ function root(fn) {
   function pending(tasks) {
     let loading = false;
     if (tasks._flag !== undefined) {
-			/** Single task. */
-			// this.val(tasks); @Claude why not like this? you wrote the line below.
+      /** Single task. */
+      // this.val(tasks); @Claude why not like this? you wrote the line below.
       val.call(this, tasks);
       if (tasks._flag & FLAG_LOADING) {
         loading = true;
@@ -1253,7 +1248,12 @@ function root(fn) {
     if (this._flag & FLAG_DISPOSED) {
       throw new Error(ASSERT_DISPOSED);
     }
-    if (!POSTING && !(this._flag & FLAG_RELAY) && typeof value !== "function" && this._value === value) {
+    if (
+      !POSTING &&
+      !(this._flag & FLAG_RELAY) &&
+      typeof value !== "function" &&
+      this._value === value
+    ) {
       return;
     }
     schedule(this, value, assign);
@@ -1347,7 +1347,6 @@ function root(fn) {
    */
   ComputeProto.set = set;
 
-
   /**
    * @this {Compute}
    * @returns {void}
@@ -1417,11 +1416,18 @@ function root(fn) {
 
       flush();
 
-      if (stale || (flag & FLAG_LOCK && (this._flag & FLAG_STALE || (this._flag & FLAG_PENDING && needsUpdate(this, TIME))))) {
+      if (
+        stale ||
+        (flag & FLAG_LOCK &&
+          (this._flag & FLAG_STALE || (this._flag & FLAG_PENDING && needsUpdate(this, TIME))))
+      ) {
         this._flag |= FLAG_STALE;
         this._update(TIME);
       }
-    } else if (flag & FLAG_LOCK && (this._flag & FLAG_STALE || (this._flag & FLAG_PENDING && needsUpdate(this, TIME)))) {
+    } else if (
+      flag & FLAG_LOCK &&
+      (this._flag & FLAG_STALE || (this._flag & FLAG_PENDING && needsUpdate(this, TIME)))
+    ) {
       this._flag |= FLAG_STALE;
       this._update(TIME);
     }
@@ -1495,7 +1501,16 @@ function root(fn) {
     }
     this._time = time;
     this._flag =
-      flag & ~(FLAG_STALE | FLAG_LOADING | FLAG_ERROR | FLAG_EQUAL | FLAG_NOTEQUAL | FLAG_SUSPEND | FLAG_PANIC);
+      flag &
+      ~(
+        FLAG_STALE |
+        FLAG_LOADING |
+        FLAG_ERROR |
+        FLAG_EQUAL |
+        FLAG_NOTEQUAL |
+        FLAG_SUSPEND |
+        FLAG_PANIC
+      );
 
     if (!(flag & FLAG_INIT) && this._cleanup !== null) {
       clearCleanup(this);
@@ -1634,17 +1649,9 @@ function root(fn) {
       if (kind !== ASYNC_SYNC) {
         this._flag |= FLAG_LOADING;
         if (kind === ASYNC_PROMISE) {
-          resolvePromise(
-            this,
-            /** @type {IThenable} */ (value),
-            time
-          );
+          resolvePromise(this, /** @type {IThenable} */ (value), time);
         } else {
-          resolveIterator(
-            this,
-            /** @type {AsyncIterator | AsyncIterable} */ (value),
-            time
-          );
+          resolveIterator(this, /** @type {AsyncIterator | AsyncIterable} */ (value), time);
         }
         return;
       }
@@ -1887,7 +1894,11 @@ function root(fn) {
     if (this._flag & FLAG_CHANNEL && (this._args._defer1 !== null || this._args._defers !== null)) {
       stale = settleDeps(this);
     }
-    if (stale || (flag & FLAG_LOCK && (this._flag & FLAG_STALE || (this._flag & FLAG_PENDING && needsUpdate(this, TIME))))) {
+    if (
+      stale ||
+      (flag & FLAG_LOCK &&
+        (this._flag & FLAG_STALE || (this._flag & FLAG_PENDING && needsUpdate(this, TIME))))
+    ) {
       this._flag |= FLAG_STALE;
       this._receive();
       flush();
@@ -1991,12 +2002,7 @@ function root(fn) {
       flag = FLAG_ASYNC | FLAG_SETUP | ((0 | optsOrSeed) & OPTIONS);
       node = new Compute(flag, depOrFn, null, fnOrSeed, argsOrOpts);
     } else {
-      flag =
-        FLAG_ASYNC |
-        FLAG_STABLE |
-        FLAG_BOUND |
-        FLAG_SINGLE |
-        ((0 | argsOrOpts) & OPTIONS);
+      flag = FLAG_ASYNC | FLAG_STABLE | FLAG_BOUND | FLAG_SINGLE | ((0 | argsOrOpts) & OPTIONS);
       node = new Compute(flag, fnOrSeed, depOrFn, optsOrSeed, args);
       node._dep1slot = connect(depOrFn, node, -1);
     }
@@ -2042,12 +2048,7 @@ function root(fn) {
       flag = FLAG_ASYNC | FLAG_SETUP | ((0 | fnOrOpts) & OPTIONS);
       node = new Effect(flag, depOrFn, null, this, optsOrArgs);
     } else {
-      flag =
-        FLAG_ASYNC |
-        FLAG_STABLE |
-        FLAG_BOUND |
-        FLAG_SINGLE |
-        ((0 | optsOrArgs) & OPTIONS);
+      flag = FLAG_ASYNC | FLAG_STABLE | FLAG_BOUND | FLAG_SINGLE | ((0 | optsOrArgs) & OPTIONS);
       node = new Effect(flag, fnOrOpts, depOrFn, this, args);
       node._dep1slot = connect(depOrFn, node, -1);
     }
@@ -2068,7 +2069,7 @@ function root(fn) {
   RootProto.task = EffectProto.task = _task;
   RootProto.effect = EffectProto.effect = _effect;
   RootProto.spawn = EffectProto.spawn = _spawn;
-	RootProto.root = EffectProto.root = root;
+  RootProto.root = EffectProto.root = root;
 }
 
 /**
@@ -2186,10 +2187,7 @@ function clearDeps(receive) {
   if (deps !== null) {
     let count = deps.length;
     for (let i = 0; i < count; i += 2) {
-      clearReceiver(
-        /** @type {Sender} */(deps[i]),
-        /** @type {number} */(deps[i + 1])
-      );
+      clearReceiver(/** @type {Sender} */ (deps[i]), /** @type {number} */ (deps[i + 1]));
     }
     receive._deps = null;
   }
@@ -2208,10 +2206,7 @@ function clearSubs(send) {
   if (subs !== null) {
     let count = subs.length;
     for (let i = 0; i < count; i += 2) {
-      clearSender(
-        /** @type {Receiver} */(subs[i]),
-        /** @type {number} */(subs[i + 1])
-      );
+      clearSender(/** @type {Receiver} */ (subs[i]), /** @type {number} */ (subs[i + 1]));
     }
     send._subs = null;
   }
@@ -2314,19 +2309,19 @@ const RECOVER_OWNER = 2;
  * @returns {number}
  */
 function tryRecover(node, error) {
-	/** Self-recovery: node stays alive. */
-	if (node._recover !== null && _checkRecover(node, error)) {
-		return RECOVER_SELF;
-	}
-	/** Bubble up the owner chain. Node will be disposed by caller. */
-	let owner = node._owner;
-	while (owner !== null) {
-		if (_checkRecover(owner, error)) {
-			return RECOVER_OWNER;
-		}
-		owner = owner._owner;
-	}
-	return RECOVER_NONE;
+  /** Self-recovery: node stays alive. */
+  if (node._recover !== null && _checkRecover(node, error)) {
+    return RECOVER_SELF;
+  }
+  /** Bubble up the owner chain. Node will be disposed by caller. */
+  let owner = node._owner;
+  while (owner !== null) {
+    if (_checkRecover(owner, error)) {
+      return RECOVER_OWNER;
+    }
+    owner = owner._owner;
+  }
+  return RECOVER_NONE;
 }
 
 /**
@@ -2400,7 +2395,7 @@ function patchDeps(node, version, depCount, newLen) {
       continue;
     }
     /** Dropped — unbind (read slot only on the drop path) */
-    clearReceiver(dep, /** @type {number} */(deps[i + 1]));
+    clearReceiver(dep, /** @type {number} */ (deps[i + 1]));
     if (newidx < newLen) {
       /** Fill hole with next new dep */
       let newDep = /** @type {Sender} */ (deps[newidx]);
@@ -2432,7 +2427,7 @@ function patchDeps(node, version, depCount, newLen) {
           break;
         } else {
           /** Also dropped — unbind */
-          clearReceiver(tDep, /** @type {number} */(deps[tail + 1]));
+          clearReceiver(tDep, /** @type {number} */ (deps[tail + 1]));
         }
       }
       if (found) {
@@ -2591,9 +2586,9 @@ function needsUpdate(node, time) {
     } else if (flag & FLAG_PENDING) {
       TRANSACTION = SEED;
       if (flag & FLAG_SINGLE) {
-        checkSingle(/** @type {Compute} */(dep), time);
+        checkSingle(/** @type {Compute} */ (dep), time);
       } else {
-        checkRun(/** @type {Compute} */(dep), time);
+        checkRun(/** @type {Compute} */ (dep), time);
       }
     }
     if (dep._ctime > lastRun) {
@@ -2612,9 +2607,9 @@ function needsUpdate(node, time) {
       } else if (flag & FLAG_PENDING) {
         TRANSACTION = SEED;
         if (flag & FLAG_SINGLE) {
-          checkSingle(/** @type {Compute} */(dep), time);
+          checkSingle(/** @type {Compute} */ (dep), time);
         } else {
-          checkRun(/** @type {Compute} */(dep), time);
+          checkRun(/** @type {Compute} */ (dep), time);
         }
       }
       if (dep._ctime > lastRun) {
@@ -2637,9 +2632,9 @@ function checkSingle(node, time) {
     dep._update(time);
   } else if (flag & FLAG_PENDING) {
     if (flag & FLAG_SINGLE) {
-      checkSingle(/** @type {Compute} */(dep), time);
+      checkSingle(/** @type {Compute} */ (dep), time);
     } else {
-      checkRun(/** @type {Compute} */(dep), time);
+      checkRun(/** @type {Compute} */ (dep), time);
     }
   }
   if (dep._ctime > node._time) {
@@ -2671,16 +2666,13 @@ function checkRun(node, time) {
       CTOP++;
       node = dep;
       dep = node._dep1;
-    } while (
-      dep !== null &&
-      (dep._flag & (FLAG_STALE | FLAG_PENDING)) === FLAG_PENDING
-    );
+    } while (dep !== null && (dep._flag & (FLAG_STALE | FLAG_PENDING)) === FLAG_PENDING);
   }
 
   /** -2 = fresh entry (scan from dep1), -1 = resume after dep1, >= 0 = resume after _deps[n] */
   let resumeFrom = -2;
 
-  outer: for (; ;) {
+  outer: for (;;) {
     let lastRun = node._time;
     let i;
 
@@ -2836,7 +2828,7 @@ function asyncKind(value) {
  * @param {number} time
  * @returns {void}
  */
-	function resolvePromise(node, promise, time) {
+function resolvePromise(node, promise, time) {
   promise.then(
     (val) => {
       if (node._time !== time || (node._flag & FLAG_DISPOSED && !(node._flag & FLAG_LOCK))) {
@@ -2867,7 +2859,7 @@ function asyncKind(value) {
         }
       }
       node._error(err);
-    }
+    },
   );
 }
 
@@ -3062,7 +3054,7 @@ function settleDeps(node) {
     while (i >= 0) {
       let dep = /** @type {!Sender} */ (deps[i]);
       if (dep._version === stamp) {
-        clearReceiver(dep, /** @type {number} */(deps[i + 1]));
+        clearReceiver(dep, /** @type {number} */ (deps[i + 1]));
         write -= 2;
         if (i !== write) {
           let lastDep, lastSlot;
@@ -3311,7 +3303,6 @@ function resolveWaiters(responder, responderCh, value, isError, panic) {
   responder._flag &= ~FLAG_WAITER;
 }
 
-
 /**
  * Runs `fn` with the root node itself as the argument. Prototype methods
  * on Root (compute/effect/derive/etc.) use `this` (the root) as the owner.
@@ -3430,10 +3421,7 @@ function flush() {
         for (let i = 0; i < count; i++) {
           let node = COMPUTES[i];
           COMPUTES[i] = null;
-          if (
-            node._flag & FLAG_STALE ||
-            (node._flag & FLAG_PENDING && needsUpdate(node, time))
-          ) {
+          if (node._flag & FLAG_STALE || (node._flag & FLAG_PENDING && needsUpdate(node, time))) {
             node._update(time);
           } else {
             node._flag &= ~(FLAG_STALE | FLAG_PENDING);
@@ -3448,10 +3436,7 @@ function flush() {
           let effects = SCOPES[i];
           for (let j = 0; j < count; j++) {
             let node = effects[j];
-            if (
-              node._flag & FLAG_STALE ||
-              (node._flag & FLAG_PENDING && needsUpdate(node, time))
-            ) {
+            if (node._flag & FLAG_STALE || (node._flag & FLAG_PENDING && needsUpdate(node, time))) {
               try {
                 TRANSACTION = SEED;
                 node._update(time);
@@ -3481,10 +3466,7 @@ function flush() {
         for (let i = 0; i < count; i++) {
           let node = RECEIVERS[i];
           RECEIVERS[i] = null;
-          if (
-            node._flag & FLAG_STALE ||
-            (node._flag & FLAG_PENDING && needsUpdate(node, time))
-          ) {
+          if (node._flag & FLAG_STALE || (node._flag & FLAG_PENDING && needsUpdate(node, time))) {
             TRANSACTION = SEED;
             try {
               node._update(time);
@@ -3566,8 +3548,7 @@ function task(depOrFn, fnOrSeed, optsOrSeed, argsOrOpts, args) {
     flag = FLAG_ASYNC | FLAG_SETUP | ((0 | optsOrSeed) & OPTIONS);
     node = new Compute(flag, depOrFn, null, fnOrSeed, argsOrOpts);
   } else {
-    flag =
-      FLAG_ASYNC | FLAG_STABLE | FLAG_BOUND | FLAG_SINGLE | ((0 | argsOrOpts) & OPTIONS);
+    flag = FLAG_ASYNC | FLAG_STABLE | FLAG_BOUND | FLAG_SINGLE | ((0 | argsOrOpts) & OPTIONS);
     node = new Compute(flag, fnOrSeed, depOrFn, optsOrSeed, args);
     node._dep1slot = connect(depOrFn, node, -1);
   }
@@ -3617,8 +3598,7 @@ function spawn(depOrFn, fnOrOpts, optsOrArgs, args) {
     flag = FLAG_ASYNC | FLAG_SETUP | ((0 | fnOrOpts) & OPTIONS);
     node = new Effect(flag, depOrFn, null, null, optsOrArgs);
   } else {
-    flag =
-      FLAG_ASYNC | FLAG_STABLE | FLAG_BOUND | FLAG_SINGLE | ((0 | optsOrArgs) & OPTIONS);
+    flag = FLAG_ASYNC | FLAG_STABLE | FLAG_BOUND | FLAG_SINGLE | ((0 | optsOrArgs) & OPTIONS);
     node = new Effect(flag, fnOrOpts, depOrFn, null, args);
     node._dep1slot = connect(depOrFn, node, -1);
   }
@@ -3626,14 +3606,13 @@ function spawn(depOrFn, fnOrOpts, optsOrArgs, args) {
   return node;
 }
 
-
 /**
  * Microtask flush callback. Drains the queue if idle,
  * otherwise the active transaction will handle it.
  */
 function microflush() {
   POSTING = false;
-    flush();
+  flush();
 }
 
 /**
@@ -3655,7 +3634,10 @@ function batch(fn) {
 }
 
 export {
-  Root, Signal, Compute, Effect,
+  Root,
+  Signal,
+  Compute,
+  Effect,
   FLAG_STALE,
   FLAG_PENDING,
   FLAG_SCHEDULED,
@@ -3674,7 +3656,6 @@ export {
   FLAG_ASYNC,
   FLAG_BOUND,
   FLAG_CHANNEL,
-
   FLAG_EAGER,
   FLAG_BLOCKED,
   FLAG_LOCK,
@@ -3703,5 +3684,5 @@ export {
   task,
   effect,
   spawn,
-  root
+  root,
 };

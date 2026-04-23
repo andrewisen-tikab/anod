@@ -1,7 +1,4 @@
-import {
-  Signal, Compute, Effect, Sender,
-  ComputeContext, EffectContext
-} from "anod-core";
+import { Signal, Compute, Effect, Sender, ComputeContext, EffectContext } from "anod-core";
 
 export type ListParam<T> = T | Sender<T>;
 
@@ -9,24 +6,62 @@ export interface Collection<T> extends Compute<readonly T[]> {
   at(index: ListParam<number>): Compute<T | undefined>;
   concat(...items: ListParam<any>[]): Collection<T>;
   entries(): Compute<IterableIterator<[number, T]>>;
-  every(cb: (value: T, index: number, array: T[], c: ComputeContext) => boolean, opts?: number): Compute<boolean>;
-  filter(cb: (value: T, index: number, array: T[], c: ComputeContext) => boolean, opts?: number): Collection<T>;
-  find(cb: (value: T, index: number, array: T[], c: ComputeContext) => boolean, opts?: number): Compute<T | undefined>;
-  findIndex(cb: (value: T, index: number, array: T[], c: ComputeContext) => boolean, opts?: number): Compute<number>;
-  findLast(cb: (value: T, index: number, array: T[], c: ComputeContext) => boolean, opts?: number): Compute<T | undefined>;
-  findLastIndex(cb: (value: T, index: number, array: T[], c: ComputeContext) => boolean, opts?: number): Compute<number>;
+  every(
+    cb: (value: T, index: number, array: T[], c: ComputeContext) => boolean,
+    opts?: number,
+  ): Compute<boolean>;
+  filter(
+    cb: (value: T, index: number, array: T[], c: ComputeContext) => boolean,
+    opts?: number,
+  ): Collection<T>;
+  find(
+    cb: (value: T, index: number, array: T[], c: ComputeContext) => boolean,
+    opts?: number,
+  ): Compute<T | undefined>;
+  findIndex(
+    cb: (value: T, index: number, array: T[], c: ComputeContext) => boolean,
+    opts?: number,
+  ): Compute<number>;
+  findLast(
+    cb: (value: T, index: number, array: T[], c: ComputeContext) => boolean,
+    opts?: number,
+  ): Compute<T | undefined>;
+  findLastIndex(
+    cb: (value: T, index: number, array: T[], c: ComputeContext) => boolean,
+    opts?: number,
+  ): Compute<number>;
   flat(depth?: ListParam<number>): Collection<any>;
-  flatMap<U>(cb: (value: T, index: number, array: T[], c: ComputeContext) => U[], opts?: number): Collection<U>;
-  forEach(cb: (value: T, index: number, array: T[], c: EffectContext) => void | (() => void), opts?: number): Effect;
+  flatMap<U>(
+    cb: (value: T, index: number, array: T[], c: ComputeContext) => U[],
+    opts?: number,
+  ): Collection<U>;
+  forEach(
+    cb: (value: T, index: number, array: T[], c: EffectContext) => void | (() => void),
+    opts?: number,
+  ): Effect;
   includes(searchElement: any, fromIndex?: ListParam<number>): Compute<boolean>;
   indexOf(searchElement: any, fromIndex?: ListParam<number>): Compute<number>;
   join(separator?: ListParam<string>): Compute<string>;
   keys(): Compute<IterableIterator<number>>;
-  map<U>(cb: (value: T, index: number, array: T[], c: ComputeContext) => U, opts?: number): Collection<U>;
-  reduce<U>(cb: (accumulator: U, currentValue: T, currentIndex: number, array: T[], c: ComputeContext) => U, initialValue?: ListParam<U>, opts?: number): Compute<U>;
-  reduceRight<U>(cb: (accumulator: U, currentValue: T, currentIndex: number, array: T[], c: ComputeContext) => U, initialValue?: ListParam<U>, opts?: number): Compute<U>;
+  map<U>(
+    cb: (value: T, index: number, array: T[], c: ComputeContext) => U,
+    opts?: number,
+  ): Collection<U>;
+  reduce<U>(
+    cb: (accumulator: U, currentValue: T, currentIndex: number, array: T[], c: ComputeContext) => U,
+    initialValue?: ListParam<U>,
+    opts?: number,
+  ): Compute<U>;
+  reduceRight<U>(
+    cb: (accumulator: U, currentValue: T, currentIndex: number, array: T[], c: ComputeContext) => U,
+    initialValue?: ListParam<U>,
+    opts?: number,
+  ): Compute<U>;
   slice(start?: ListParam<number>, end?: ListParam<number>): Collection<T>;
-  some(cb: (value: T, index: number, array: T[], c: ComputeContext) => boolean, opts?: number): Compute<boolean>;
+  some(
+    cb: (value: T, index: number, array: T[], c: ComputeContext) => boolean,
+    opts?: number,
+  ): Compute<boolean>;
   values(): Compute<IterableIterator<T>>;
 }
 

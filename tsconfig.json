@@ -1,15 +1,15 @@
 {
-	"compilerOptions": {
-		"composite": true,
-		"noEmit": true,
-		"declaration": true,
-		"declarationMap": true,
-		"module": "NodeNext",
-		"moduleResolution": "NodeNext"
-	},
-	"references": [
-		{ "path": "./packages/anod" },
-		{ "path": "./packages/anod-core" },
-		{ "path": "./packages/anod-list" }
-	]
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": true,
+    "declaration": true,
+    "declarationMap": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext"
+  },
+  "references": [
+    { "path": "./packages/anod" },
+    { "path": "./packages/anod-core" },
+    { "path": "./packages/anod-list" }
+  ]
 }

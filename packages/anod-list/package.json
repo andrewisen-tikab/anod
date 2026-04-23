@@ -1,9 +1,39 @@
 {
   "name": "anod-list",
   "version": "0.5.0",
+  "description": "Reactive array methods for anod",
+  "keywords": [
+    "array",
+    "list",
+    "reactive",
+    "signals"
+  ],
+  "homepage": "https://github.com/visj/anod#readme",
+  "bugs": {
+    "url": "https://github.com/visj/anod/issues"
+  },
+  "license": "MIT",
+  "author": "Vilhelm Sjölund",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/visj/anod.git",
+    "directory": "packages/list"
+  },
+  "files": [
+    "dist"
+  ],
   "type": "module",
+  "sideEffects": true,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "imports": {
+    "#test-runner": {
+      "bun": "./test/env/bun.js",
+      "node": "./test/env/node.js",
+      "default": "./test/env/node.js"
+    },
+    "#list": "./dist/index.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -13,41 +43,16 @@
       "import": "./src/list.js"
     }
   },
-  "files": [
-    "dist"
-  ],
-  "sideEffects": true,
   "scripts": {
     "make": "bun scripts/build.js",
     "test": "bun test"
-  },
-  "keywords": ["reactive", "signals", "list", "array"],
-  "author": "Vilhelm Sjölund",
-  "license": "MIT",
-  "description": "Reactive array methods for anod",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/visj/anod.git",
-    "directory": "packages/list"
-  },
-  "homepage": "https://github.com/visj/anod#readme",
-  "bugs": {
-    "url": "https://github.com/visj/anod/issues"
-  },
-  "peerDependencies": {
-    "anod-core": "^0.5.0"
   },
   "devDependencies": {
     "anod-core": "workspace:*",
     "rolldown": "^1.0.0-rc.9",
     "terser": "^5.0.0"
   },
-  "imports": {
-    "#test-runner": {
-      "bun": "./test/env/bun.js",
-      "node": "./test/env/node.js",
-      "default": "./test/env/node.js"
-    },
-    "#list": "./dist/index.js"
+  "peerDependencies": {
+    "anod-core": "^0.5.0"
   }
 }

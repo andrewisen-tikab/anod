@@ -19,7 +19,7 @@
 
 import { c } from "../src/index.js";
 
-import { cursorTo, clearLine } from 'node:readline';
+import { cursorTo, clearLine } from "node:readline";
 
 const NO_PROGRESS = process.argv.includes("--no-progress");
 
@@ -59,17 +59,17 @@ let testsPassed = 0;
 let testsFailed = 0;
 
 async function runTest(name, fn) {
-	await forceGC();
-	console.log(`Running test ${name}`);
-	const now = performance.now();
+  await forceGC();
+  console.log(`Running test ${name}`);
+  const now = performance.now();
   const before = process.memoryUsage().heapUsed;
   try {
     await fn();
     await forceGC();
     const after = process.memoryUsage().heapUsed;
-		const delta = after - before;
-		clearLoader();
-		const duration = performance.now() - now;
+    const delta = after - before;
+    clearLoader();
+    const duration = performance.now() - now;
     /** Allow 2MB of noise */
     if (delta > 2 * 1024 * 1024) {
       console.log(`  FAIL ${name}: leaked ${fmtMB(delta)}, duration: ${duration}`);
@@ -81,7 +81,7 @@ async function runTest(name, fn) {
   } catch (err) {
     console.log(`  FAIL ${name}: threw ${err.message}, duration: ${performance.now() - now}`);
     testsFailed++;
-	}
+  }
 }
 
 // ─── Test helpers ────────────────────────────────────────────────────────────
@@ -124,11 +124,11 @@ async function main() {
 
     for (let i = 1; i <= ITERATIONS; i++) {
       s1.set(i);
-			if (i % 1000 === 0) {
-				updateLoader(Math.floor((i / ITERATIONS) * 100));
-				await nextTick();
+      if (i % 1000 === 0) {
+        updateLoader(Math.floor((i / ITERATIONS) * 100));
+        await nextTick();
       }
-		}
+    }
     r.dispose();
   });
 
@@ -143,11 +143,11 @@ async function main() {
         });
       });
       r.dispose();
-			if (i % 1000 === 0) {
-				updateLoader(Math.floor((i / ITERATIONS) * 100));
+      if (i % 1000 === 0) {
+        updateLoader(Math.floor((i / ITERATIONS) * 100));
         await nextTick();
       }
-		}
+    }
   });
 
   // ── 3. Task re-runs while awaiting (stale activation) ────────────────────
@@ -166,30 +166,32 @@ async function main() {
 
     for (let i = 1; i <= ITERATIONS; i++) {
       s1.set(i);
-			if (i % 1000 === 0) {
-				updateLoader(Math.floor((i / ITERATIONS) * 100));
+      if (i % 1000 === 0) {
+        updateLoader(Math.floor((i / ITERATIONS) * 100));
         await nextTick();
       }
     }
     r.dispose();
-		taskA.dispose();
+    taskA.dispose();
   });
 
   // ── 4. Task disposed while awaiting ──────────────────────────────────────
   await runTest("task dispose: pending task promises collected", async () => {
     for (let i = 0; i < ITERATIONS; i++) {
       const taskA = c.task((cx) => {
-        return cx.suspend(new Promise(() => {
-          // never resolves, holds payload
-          new Array(PAYLOAD_SIZE).fill(i);
-        }));
+        return cx.suspend(
+          new Promise(() => {
+            // never resolves, holds payload
+            new Array(PAYLOAD_SIZE).fill(i);
+          }),
+        );
       });
       taskA.dispose();
-			if (i % 1000 === 0) {
-				updateLoader(Math.floor((i / ITERATIONS) * 100));
+      if (i % 1000 === 0) {
+        updateLoader(Math.floor((i / ITERATIONS) * 100));
         await nextTick();
       }
-		}
+    }
   });
 
   // ── 5. Spawn awaiting task that re-runs ──────────────────────────────────
@@ -211,13 +213,13 @@ async function main() {
 
     for (let i = 1; i <= ITERATIONS; i++) {
       s1.set(i);
-			if (i % 1000 === 0) {
-				updateLoader(Math.floor((i / ITERATIONS) * 100));
+      if (i % 1000 === 0) {
+        updateLoader(Math.floor((i / ITERATIONS) * 100));
         await nextTick();
       }
     }
     r.dispose();
-		taskA.dispose();
+    taskA.dispose();
   });
 
   // ── 6. Spawn awaiting task that disposes (panic) ─────────────────────────
@@ -234,11 +236,11 @@ async function main() {
       });
       taskA.dispose(); // panics the spawn
       r.dispose();
-			if (i % 1000 === 0) {
-				updateLoader(Math.floor((i / ITERATIONS) * 100));
+      if (i % 1000 === 0) {
+        updateLoader(Math.floor((i / ITERATIONS) * 100));
         await nextTick();
       }
-		}
+    }
   });
 
   // ── 7. Rapid signal updates: many abandoned continuations ────────────────
@@ -262,15 +264,15 @@ async function main() {
     /** Flood with updates — each one creates a new activation
      *  that immediately stales the previous one. */
     for (let i = 1; i <= ITERATIONS; i++) {
-			s1.set(i);
-			if (i % 1000 === 0) {
-				updateLoader(Math.floor((i / ITERATIONS) * 100));
-			}
-			if (i % 5000 === 0) {
+      s1.set(i);
+      if (i % 1000 === 0) {
+        updateLoader(Math.floor((i / ITERATIONS) * 100));
+      }
+      if (i % 5000 === 0) {
         await nextTick();
       }
     }
-		r.dispose();
+    r.dispose();
   });
 
   // ── 8. Chained suspends — multiple awaits per function ───────────────────
@@ -287,8 +289,8 @@ async function main() {
         });
       });
       r.dispose();
-			if (i % 1000 === 0) {
-				updateLoader(Math.floor((i / ITERATIONS) * 100));
+      if (i % 1000 === 0) {
+        updateLoader(Math.floor((i / ITERATIONS) * 100));
         await nextTick();
       }
     }
@@ -297,7 +299,9 @@ async function main() {
   // ── 9. WeakRef in suspend: node collected even with pending promise ──────
   await runTest("WeakRef: disposed node collected despite pending promise", async () => {
     let collected = 0;
-    const registry = new FinalizationRegistry(() => { collected++; });
+    const registry = new FinalizationRegistry(() => {
+      collected++;
+    });
 
     for (let i = 0; i < 1000; i++) {
       const r = c.root((r) => {
@@ -330,8 +334,8 @@ async function main() {
         });
       });
       r.dispose();
-			if (i % 1000 === 0) {
-				updateLoader(Math.floor((i / ITERATIONS) * 100));
+      if (i % 1000 === 0) {
+        updateLoader(Math.floor((i / ITERATIONS) * 100));
         await nextTick();
       }
     }
@@ -343,11 +347,7 @@ async function main() {
     const r = c.root((r) => {
       r.spawn(async (cx) => {
         cx.val(s1);
-        await cx.suspend(Promise.all([
-          neverResolve(),
-          neverResolve(),
-          neverResolve(),
-        ]));
+        await cx.suspend(Promise.all([neverResolve(), neverResolve(), neverResolve()]));
       });
     });
 
@@ -367,11 +367,7 @@ async function main() {
     const r = c.root((r) => {
       r.spawn(async (cx) => {
         cx.val(s1);
-        await cx.suspend(Promise.race([
-          neverResolve(),
-          neverResolve(),
-          neverResolve(),
-        ]));
+        await cx.suspend(Promise.race([neverResolve(), neverResolve(), neverResolve()]));
       });
     });
 

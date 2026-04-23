@@ -1,14 +1,23 @@
-import {
-    OPT_SETUP, OPT_STABLE
-} from 'anod-core';
+import { OPT_SETUP, OPT_STABLE } from "anod-core";
 
 import {
-    Signal, Compute, Effect,
-    IDLE,
-    FLAG_STALE, FLAG_INIT, FLAG_BOUND, FLAG_SCHEDULED, OPT_DEFER,
-    connect, schedule, notify, flush,
-    startEffect, startCompute, signal
-} from 'anod-core/internal';
+  Signal,
+  Compute,
+  Effect,
+  IDLE,
+  FLAG_STALE,
+  FLAG_INIT,
+  FLAG_BOUND,
+  FLAG_SCHEDULED,
+  OPT_DEFER,
+  connect,
+  schedule,
+  notify,
+  flush,
+  startEffect,
+  startCompute,
+  signal,
+} from "anod-core/internal";
 
 /**
  * Mutation tracking — encoded in the Signal's _flag, bits 7-31.
@@ -28,9 +37,9 @@ const MUT_DEL = 2;
 const MUT_SORT = 4;
 const MUT_OP_MASK = 7;
 const MUT_LEN_SHIFT = 3;
-const MUT_LEN_MASK = 0x1F;
+const MUT_LEN_MASK = 0x1f;
 const MUT_POS_SHIFT = 8;
-const MUT_POS_MASK = 0x1FFFF;
+const MUT_POS_MASK = 0x1ffff;
 
 /** @const */
 var SignalProto = Signal.prototype;
@@ -44,7 +53,7 @@ var ComputeProto = Compute.prototype;
  * @returns {number}
  */
 ComputeProto._getMod = function () {
-    return this._dep1._flag >>> MOD_SHIFT;
+  return this._dep1._flag >>> MOD_SHIFT;
 };
 
 /**
@@ -55,7 +64,7 @@ ComputeProto._getMod = function () {
  * @returns {number}
  */
 function encode(op, pos, len) {
-    return ((op | (len << MUT_LEN_SHIFT) | (pos << MUT_POS_SHIFT)) << MOD_SHIFT) >>> 0;
+  return ((op | (len << MUT_LEN_SHIFT) | (pos << MUT_POS_SHIFT)) << MOD_SHIFT) >>> 0;
 }
 
 /**
@@ -68,7 +77,7 @@ function encode(op, pos, len) {
  * @returns {void}
  */
 /** Sender flag mask — preserve bits 0-5, clear mod bits 6+. */
-const FLAG_SENDER_MASK = 0x7F;
+const FLAG_SENDER_MASK = 0x7f;
 
 /**
  * Sets mod on the signal, notifies, and flushes. The mod bits
@@ -77,9 +86,9 @@ const FLAG_SENDER_MASK = 0x7F;
  * @param {number} mod - pre-encoded mod (already shifted)
  */
 function modify(node, mod) {
-    node._flag = (node._flag & FLAG_SENDER_MASK) | mod;
-    notify(node, FLAG_STALE);
-    flush();
+  node._flag = (node._flag & FLAG_SENDER_MASK) | mod;
+  notify(node, FLAG_STALE);
+  flush();
 }
 
 /**
@@ -88,10 +97,10 @@ function modify(node, mod) {
  * @param {number} mod - pre-encoded mod (already shifted by MOD_SHIFT)
  */
 function setMod(node, mod) {
-    if (node._flag & FLAG_SCHEDULED) {
-        node._flag = (node._flag & FLAG_SENDER_MASK & ~FLAG_SCHEDULED) | mod;
-        notify(node, FLAG_STALE);
-    }
+  if (node._flag & FLAG_SCHEDULED) {
+    node._flag = (node._flag & FLAG_SENDER_MASK & ~FLAG_SCHEDULED) | mod;
+    notify(node, FLAG_STALE);
+  }
 }
 
 /**
@@ -99,70 +108,70 @@ function setMod(node, mod) {
  * encodes the mod into _flag bits 6+, and notifies subscribers.
  */
 function push(node, value) {
-    let pos = node._value.length;
-    node._value.push(value);
-    setMod(node, encode(MUT_ADD, pos, 1));
+  let pos = node._value.length;
+  node._value.push(value);
+  setMod(node, encode(MUT_ADD, pos, 1));
 }
 function pushArray(node, items) {
-    let pos = node._value.length;
-    node._value.push(...items);
-    setMod(node, encode(MUT_ADD, pos, items.length));
+  let pos = node._value.length;
+  node._value.push(...items);
+  setMod(node, encode(MUT_ADD, pos, items.length));
 }
 function pop(node) {
-    node._value.pop();
-    setMod(node, encode(MUT_DEL, node._value.length, 1));
+  node._value.pop();
+  setMod(node, encode(MUT_DEL, node._value.length, 1));
 }
 function shift(node) {
-    node._value.shift();
-    setMod(node, encode(MUT_DEL, 0, 1));
+  node._value.shift();
+  setMod(node, encode(MUT_DEL, 0, 1));
 }
 function unshift(node, value) {
-    node._value.unshift(value);
-    setMod(node, encode(MUT_ADD, 0, 1));
+  node._value.unshift(value);
+  setMod(node, encode(MUT_ADD, 0, 1));
 }
 function unshiftArray(node, items) {
-    node._value.unshift(...items);
-    setMod(node, encode(MUT_ADD, 0, items.length));
+  node._value.unshift(...items);
+  setMod(node, encode(MUT_ADD, 0, items.length));
 }
 function reverse(node) {
-    node._value.reverse();
-    setMod(node, encode(MUT_SORT, 0, 0));
+  node._value.reverse();
+  setMod(node, encode(MUT_SORT, 0, 0));
 }
 function sort(node, compareFn) {
-    node._value.sort(compareFn);
-    setMod(node, encode(MUT_SORT, 0, 0));
+  node._value.sort(compareFn);
+  setMod(node, encode(MUT_SORT, 0, 0));
 }
 function fill(node, value) {
-    node._value.fill(value);
-    setMod(node, 0);
+  node._value.fill(value);
+  setMod(node, 0);
 }
 function fillRange(node, args) {
-    node._value.fill(args[0], args[1], args[2]);
-    setMod(node, 0);
+  node._value.fill(args[0], args[1], args[2]);
+  setMod(node, 0);
 }
 function copyWithin(node, args) {
-    node._value.copyWithin(args[0], args[1], args[2]);
-    setMod(node, 0);
+  node._value.copyWithin(args[0], args[1], args[2]);
+  setMod(node, 0);
 }
 function splice(node, args) {
-    let arr = node._value;
-    let start = args[0];
-    let delCount = args[1];
-    let items = args[2];
-    let pos = start < 0 ? Math.max(0, arr.length + start) : Math.min(start, arr.length);
-    if (items.length === 0) {
-        if (delCount === void 0) {
-            delCount = arr.length - pos;
-            arr.splice(start);
-        } else {
-            arr.splice(start, delCount);
-        }
+  let arr = node._value;
+  let start = args[0];
+  let delCount = args[1];
+  let items = args[2];
+  let pos = start < 0 ? Math.max(0, arr.length + start) : Math.min(start, arr.length);
+  if (items.length === 0) {
+    if (delCount === void 0) {
+      delCount = arr.length - pos;
+      arr.splice(start);
     } else {
-        arr.splice(start, delCount, ...items);
+      arr.splice(start, delCount);
     }
-    let addLen = items.length;
-    let op = (delCount > 0 ? MUT_DEL : 0) | (addLen > 0 ? MUT_ADD : 0);
-    setMod(node, op > 0 ? encode(op, pos, Math.max(delCount, addLen)) : 0);
+  } else {
+    arr.splice(start, delCount, ...items);
+  }
+  let addLen = items.length;
+  let op = (delCount > 0 ? MUT_DEL : 0) | (addLen > 0 ? MUT_ADD : 0);
+  setMod(node, op > 0 ? encode(op, pos, Math.max(delCount, addLen)) : 0);
 }
 
 /**
@@ -172,14 +181,14 @@ function splice(node, args) {
  */
 /** @param {*} v @returns {boolean} */
 function isSignal(v) {
-    return v !== null && typeof v === "object" && v._flag !== undefined;
+  return v !== null && typeof v === "object" && v._flag !== undefined;
 }
 
 function getVal(arg) {
-    if (arg !== null && typeof arg === "object" && arg._flag !== undefined) {
-        return arg._value;
-    }
-    return arg;
+  if (arg !== null && typeof arg === "object" && arg._flag !== undefined) {
+    return arg._value;
+  }
+  return arg;
 }
 
 /**
@@ -188,10 +197,10 @@ function getVal(arg) {
  * @returns {T}
  */
 function read(source) {
-    if (source !== null && typeof source === "object" && source._flag !== undefined) {
-        return source._value;
-    }
-    return source;
+  if (source !== null && typeof source === "object" && source._flag !== undefined) {
+    return source._value;
+  }
+  return source;
 }
 
 /**
@@ -206,13 +215,13 @@ function read(source) {
  * @returns {!Compute}
  */
 function computeArray(source, fn, args, opts) {
-    let flag = FLAG_BOUND | OPT_STABLE | OPT_SETUP | (0 | opts);
-    let node = new Compute(flag, fn, source, void 0, args);
-    node._dep1slot = connect(source, node, -1);
-    if (!(flag & OPT_DEFER)) {
-        startCompute(node);
-    }
-    return node;
+  let flag = FLAG_BOUND | OPT_STABLE | OPT_SETUP | (0 | opts);
+  let node = new Compute(flag, fn, source, void 0, args);
+  node._dep1slot = connect(source, node, -1);
+  if (!(flag & OPT_DEFER)) {
+    startCompute(node);
+  }
+  return node;
 }
 
 /**
@@ -223,7 +232,7 @@ function computeArray(source, fn, args, opts) {
  * @returns {T | undefined}
  */
 function at(source, _node, seed, args) {
-    return source.at(typeof args === 'number' ? args : read(args));
+  return source.at(typeof args === "number" ? args : read(args));
 }
 
 /**
@@ -232,7 +241,7 @@ function at(source, _node, seed, args) {
  * @returns {Compute<T|undefined,Array<T>,null,number | ReadonlySignal<number>>}
  */
 SignalProto.at = ComputeProto.at = function (index) {
-    return computeArray(this, at, index, isSignal(index) ? OPT_SETUP : 0);
+  return computeArray(this, at, index, isSignal(index) ? OPT_SETUP : 0);
 };
 
 /**
@@ -243,7 +252,7 @@ SignalProto.at = ComputeProto.at = function (index) {
  * @returns {Array<T>}
  */
 function concat(source, _node, seed, args) {
-    return source.concat(args);
+  return source.concat(args);
 }
 
 /**
@@ -254,7 +263,7 @@ function concat(source, _node, seed, args) {
  * @returns {Array<T>}
  */
 function concatN(source, _node, seed, args) {
-    return source.concat(.../** @type {!Iterable} */(args));
+  return source.concat(.../** @type {!Iterable} */ (args));
 }
 
 /**
@@ -264,13 +273,13 @@ function concatN(source, _node, seed, args) {
  * @returns {Compute<Array<T>,Array<T>,null,*>}
  */
 SignalProto.concat = ComputeProto.concat = function (...items) {
-    let len = items.length;
-    if (len === 1) {
-        let item = items[0];
-        return computeArray(this, concat, /** @type {!Array} */(item), isSignal(item) ? OPT_SETUP : 0);
-    }
-    // Cast items to * so W is uniformly inferred as *
-    return computeArray(this, concatN, /** @type {!Array} */(items));
+  let len = items.length;
+  if (len === 1) {
+    let item = items[0];
+    return computeArray(this, concat, /** @type {!Array} */ (item), isSignal(item) ? OPT_SETUP : 0);
+  }
+  // Cast items to * so W is uniformly inferred as *
+  return computeArray(this, concatN, /** @type {!Array} */ (items));
 };
 
 /**
@@ -279,7 +288,7 @@ SignalProto.concat = ComputeProto.concat = function (...items) {
  * @returns {!IteratorIterable<!Array<number|T>>}
  */
 function entries(source, _node) {
-    return source.entries();
+  return source.entries();
 }
 
 /**
@@ -287,7 +296,7 @@ function entries(source, _node) {
  * @returns {Compute<!IteratorIterable<!Array<number|T>>,Array<T>,null,undefined>}
  */
 SignalProto.entries = ComputeProto.entries = function () {
-    return computeArray(this, entries, void 0);
+  return computeArray(this, entries, void 0);
 };
 
 /**
@@ -298,43 +307,43 @@ SignalProto.entries = ComputeProto.entries = function () {
  * @returns {boolean}
  */
 function every(source, _node, prev, cb) {
-    if (!(_node._flag & FLAG_INIT)) {
-        let mod = _node._getMod();
-        if (mod > 0) {
-            let op = mod & MUT_OP_MASK;
-            if (prev === true) {
-                if (!(op & (MUT_ADD | MUT_SORT))) {
-                    /** Only DEL: removing from an all-true set stays all-true */
-                    return true;
-                }
-                if (!(op & MUT_SORT) && cb.length <= 2) {
-                    /**
-                     * ADD (possibly with DEL), callback ignores index.
-                     * Existing items still pass — only check modified region.
-                     */
-                    let pos = (mod >>> MUT_POS_SHIFT) & MUT_POS_MASK;
-                    let len = (mod >>> MUT_LEN_SHIFT) & MUT_LEN_MASK;
-                    let end = Math.min(pos + len, source.length);
-                    for (let i = pos; i < end; i++) {
-                        if (!cb(source[i], i, source, _node)) {
-                            return false;
-                        }
-                    }
-                    return true;
-                }
-            }
-            if (prev === false && !(op & (MUT_DEL | MUT_SORT)) && cb.length <= 2) {
-                /** Only ADD + callback ignores index: failing item still present */
-                return false;
-            }
+  if (!(_node._flag & FLAG_INIT)) {
+    let mod = _node._getMod();
+    if (mod > 0) {
+      let op = mod & MUT_OP_MASK;
+      if (prev === true) {
+        if (!(op & (MUT_ADD | MUT_SORT))) {
+          /** Only DEL: removing from an all-true set stays all-true */
+          return true;
         }
-    }
-    for (let i = 0; i < source.length; i++) {
-        if (!cb(source[i], i, source, _node)) {
-            return false;
+        if (!(op & MUT_SORT) && cb.length <= 2) {
+          /**
+           * ADD (possibly with DEL), callback ignores index.
+           * Existing items still pass — only check modified region.
+           */
+          let pos = (mod >>> MUT_POS_SHIFT) & MUT_POS_MASK;
+          let len = (mod >>> MUT_LEN_SHIFT) & MUT_LEN_MASK;
+          let end = Math.min(pos + len, source.length);
+          for (let i = pos; i < end; i++) {
+            if (!cb(source[i], i, source, _node)) {
+              return false;
+            }
+          }
+          return true;
         }
+      }
+      if (prev === false && !(op & (MUT_DEL | MUT_SORT)) && cb.length <= 2) {
+        /** Only ADD + callback ignores index: failing item still present */
+        return false;
+      }
     }
-    return true;
+  }
+  for (let i = 0; i < source.length; i++) {
+    if (!cb(source[i], i, source, _node)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /**
@@ -344,7 +353,7 @@ function every(source, _node, prev, cb) {
  * @returns {Compute<boolean,Array<T>,null,(function(T, number): boolean)>}
  */
 SignalProto.every = ComputeProto.every = function (cb, opts) {
-    return computeArray(this, every, cb, opts);
+  return computeArray(this, every, cb, opts);
 };
 
 /**
@@ -355,13 +364,13 @@ SignalProto.every = ComputeProto.every = function (cb, opts) {
  * @returns {Array<T>}
  */
 function filter(source, _node, seed, cb) {
-    let result = [];
-    for (let i = 0; i < source.length; i++) {
-        if (cb(source[i], i, source, _node)) {
-            result.push(source[i]);
-        }
+  let result = [];
+  for (let i = 0; i < source.length; i++) {
+    if (cb(source[i], i, source, _node)) {
+      result.push(source[i]);
     }
-    return result;
+  }
+  return result;
 }
 
 /**
@@ -371,7 +380,7 @@ function filter(source, _node, seed, cb) {
  * @returns {Compute<Array<T>,Array<T>,null,(function(T, number, Array<T>): boolean)>}
  */
 SignalProto.filter = ComputeProto.filter = function (cb, opts) {
-    return computeArray(this, filter, cb, opts);
+  return computeArray(this, filter, cb, opts);
 };
 
 /**
@@ -382,12 +391,12 @@ SignalProto.filter = ComputeProto.filter = function (cb, opts) {
  * @returns {T|undefined}
  */
 function find(source, _node, seed, cb) {
-    for (let i = 0; i < source.length; i++) {
-        if (cb(source[i], i, source, _node)) {
-            return source[i];
-        }
+  for (let i = 0; i < source.length; i++) {
+    if (cb(source[i], i, source, _node)) {
+      return source[i];
     }
-    return void 0;
+  }
+  return void 0;
 }
 
 /**
@@ -398,63 +407,63 @@ function find(source, _node, seed, cb) {
  * @returns {T|undefined}
  */
 function find_mut(source, _node, prev, args) {
-    let cb = args._val;
-    if (!(_node._flag & FLAG_INIT)) {
-        let mod = _node._getMod();
-        if (mod > 0) {
-            let op = mod & MUT_OP_MASK;
-            let pos = (mod >>> MUT_POS_SHIFT) & MUT_POS_MASK;
-            let len = (mod >>> MUT_LEN_SHIFT) & MUT_LEN_MASK;
-            let idx = args._idx;
-            if (op & MUT_SORT) {
-                /* noop — fall through */
-            } else if (idx >= 0) {
-                if (pos > idx) {
-                    return prev;
-                }
-                if (op === MUT_DEL && pos + len <= idx) {
-                    args._idx = idx - len;
-                    return source[idx - len];
-                }
-                if (op === MUT_ADD && cb.length <= 2) {
-                    /** Check new region for earlier match */
-                    let end = Math.min(pos + len, source.length);
-                    for (let i = pos; i < end; i++) {
-                        if (cb(source[i], i, source, _node)) {
-                            args._idx = i;
-                            return source[i];
-                        }
-                    }
-                    args._idx = idx + len;
-                    return source[idx + len];
-                }
-            } else {
-                /** Previously not found (idx === -1) */
-                if (!(op & MUT_ADD)) {
-                    return void 0;
-                }
-                if (cb.length <= 2) {
-                    let end = Math.min(pos + len, source.length);
-                    for (let i = pos; i < end; i++) {
-                        if (cb(source[i], i, source, _node)) {
-                            args._idx = i;
-                            return source[i];
-                        }
-                    }
-                    return void 0;
-                }
+  let cb = args._val;
+  if (!(_node._flag & FLAG_INIT)) {
+    let mod = _node._getMod();
+    if (mod > 0) {
+      let op = mod & MUT_OP_MASK;
+      let pos = (mod >>> MUT_POS_SHIFT) & MUT_POS_MASK;
+      let len = (mod >>> MUT_LEN_SHIFT) & MUT_LEN_MASK;
+      let idx = args._idx;
+      if (op & MUT_SORT) {
+        /* noop — fall through */
+      } else if (idx >= 0) {
+        if (pos > idx) {
+          return prev;
+        }
+        if (op === MUT_DEL && pos + len <= idx) {
+          args._idx = idx - len;
+          return source[idx - len];
+        }
+        if (op === MUT_ADD && cb.length <= 2) {
+          /** Check new region for earlier match */
+          let end = Math.min(pos + len, source.length);
+          for (let i = pos; i < end; i++) {
+            if (cb(source[i], i, source, _node)) {
+              args._idx = i;
+              return source[i];
             }
+          }
+          args._idx = idx + len;
+          return source[idx + len];
         }
-    }
-    let idx = -1;
-    for (let i = 0; i < source.length; i++) {
-        if (cb(source[i], i, source, _node)) {
-            idx = i;
-            break;
+      } else {
+        /** Previously not found (idx === -1) */
+        if (!(op & MUT_ADD)) {
+          return void 0;
         }
+        if (cb.length <= 2) {
+          let end = Math.min(pos + len, source.length);
+          for (let i = pos; i < end; i++) {
+            if (cb(source[i], i, source, _node)) {
+              args._idx = i;
+              return source[i];
+            }
+          }
+          return void 0;
+        }
+      }
     }
-    args._idx = idx;
-    return idx >= 0 ? source[idx] : void 0;
+  }
+  let idx = -1;
+  for (let i = 0; i < source.length; i++) {
+    if (cb(source[i], i, source, _node)) {
+      idx = i;
+      break;
+    }
+  }
+  args._idx = idx;
+  return idx >= 0 ? source[idx] : void 0;
 }
 
 /**
@@ -465,10 +474,10 @@ function find_mut(source, _node, prev, args) {
  * @returns {Compute<T|undefined,Array<T>,null,(function(T, number): boolean)>}
  */
 SignalProto.find = ComputeProto.find = function (cb, opts, mutation) {
-    if (mutation) {
-        return computeArray(this, find_mut, { _val: cb, _idx: -1 }, opts);
-    }
-    return computeArray(this, find, cb, opts);
+  if (mutation) {
+    return computeArray(this, find_mut, { _val: cb, _idx: -1 }, opts);
+  }
+  return computeArray(this, find, cb, opts);
 };
 
 /**
@@ -479,12 +488,12 @@ SignalProto.find = ComputeProto.find = function (cb, opts, mutation) {
  * @returns {number}
  */
 function findIndex(source, _node, seed, cb) {
-    for (let i = 0; i < source.length; i++) {
-        if (cb(source[i], i, source, _node)) {
-            return i;
-        }
+  for (let i = 0; i < source.length; i++) {
+    if (cb(source[i], i, source, _node)) {
+      return i;
     }
-    return -1;
+  }
+  return -1;
 }
 
 /**
@@ -495,55 +504,55 @@ function findIndex(source, _node, seed, cb) {
  * @returns {number}
  */
 function findIndex_mut(source, _node, prev, cb) {
-    if (!(_node._flag & FLAG_INIT)) {
-        let mod = _node._getMod();
-        if (mod > 0) {
-            let op = mod & MUT_OP_MASK;
-            let pos = (mod >>> MUT_POS_SHIFT) & MUT_POS_MASK;
-            let len = (mod >>> MUT_LEN_SHIFT) & MUT_LEN_MASK;
-            if (op & MUT_SORT) {
-                /* noop — fall through */
-            } else if (prev >= 0) {
-                if (pos > prev) {
-                    return prev;
-                }
-                if (op === MUT_DEL) {
-                    if (pos + len <= prev) {
-                        return prev - len;
-                    }
-                } else if (op === MUT_ADD && cb.length <= 2) {
-                    /** Check new region for earlier match */
-                    let end = Math.min(pos + len, source.length);
-                    for (let i = pos; i < end; i++) {
-                        if (cb(source[i], i, source, _node)) {
-                            return i;
-                        }
-                    }
-                    return prev + len;
-                }
-            } else if (prev === -1) {
-                if (!(op & MUT_ADD)) {
-                    return -1;
-                }
-                if (cb.length <= 2) {
-                    /** Check only new region */
-                    let end = Math.min(pos + len, source.length);
-                    for (let i = pos; i < end; i++) {
-                        if (cb(source[i], i, source, _node)) {
-                            return i;
-                        }
-                    }
-                    return -1;
-                }
+  if (!(_node._flag & FLAG_INIT)) {
+    let mod = _node._getMod();
+    if (mod > 0) {
+      let op = mod & MUT_OP_MASK;
+      let pos = (mod >>> MUT_POS_SHIFT) & MUT_POS_MASK;
+      let len = (mod >>> MUT_LEN_SHIFT) & MUT_LEN_MASK;
+      if (op & MUT_SORT) {
+        /* noop — fall through */
+      } else if (prev >= 0) {
+        if (pos > prev) {
+          return prev;
+        }
+        if (op === MUT_DEL) {
+          if (pos + len <= prev) {
+            return prev - len;
+          }
+        } else if (op === MUT_ADD && cb.length <= 2) {
+          /** Check new region for earlier match */
+          let end = Math.min(pos + len, source.length);
+          for (let i = pos; i < end; i++) {
+            if (cb(source[i], i, source, _node)) {
+              return i;
             }
+          }
+          return prev + len;
         }
-    }
-    for (let i = 0; i < source.length; i++) {
-        if (cb(source[i], i, source, _node)) {
-            return i;
+      } else if (prev === -1) {
+        if (!(op & MUT_ADD)) {
+          return -1;
         }
+        if (cb.length <= 2) {
+          /** Check only new region */
+          let end = Math.min(pos + len, source.length);
+          for (let i = pos; i < end; i++) {
+            if (cb(source[i], i, source, _node)) {
+              return i;
+            }
+          }
+          return -1;
+        }
+      }
     }
-    return -1;
+  }
+  for (let i = 0; i < source.length; i++) {
+    if (cb(source[i], i, source, _node)) {
+      return i;
+    }
+  }
+  return -1;
 }
 
 /**
@@ -554,7 +563,7 @@ function findIndex_mut(source, _node, prev, cb) {
  * @returns {Compute<number,Array<T>,null,(function(T, number): boolean)>}
  */
 SignalProto.findIndex = ComputeProto.findIndex = function (cb, opts, mutation) {
-    return computeArray(this, mutation ? findIndex_mut : findIndex, cb, opts);
+  return computeArray(this, mutation ? findIndex_mut : findIndex, cb, opts);
 };
 
 /**
@@ -565,12 +574,12 @@ SignalProto.findIndex = ComputeProto.findIndex = function (cb, opts, mutation) {
  * @returns {T | undefined}
  */
 function findLast(source, _node, seed, cb) {
-    for (let i = source.length - 1; i >= 0; i--) {
-        if (cb(source[i], i, source, _node)) {
-            return source[i];
-        }
+  for (let i = source.length - 1; i >= 0; i--) {
+    if (cb(source[i], i, source, _node)) {
+      return source[i];
     }
-    return void 0;
+  }
+  return void 0;
 }
 
 /**
@@ -581,68 +590,68 @@ function findLast(source, _node, seed, cb) {
  * @returns {T | undefined}
  */
 function findLast_mut(source, _node, prev, args) {
-    if (!(_node._flag & FLAG_INIT)) {
-        let mod = _node._getMod();
-        if (mod > 0) {
-            let op = mod & MUT_OP_MASK;
-            let pos = (mod >>> MUT_POS_SHIFT) & MUT_POS_MASK;
-            let len = (mod >>> MUT_LEN_SHIFT) & MUT_LEN_MASK;
-            let idx = args._idx;
-            if (op & MUT_SORT) {
-                /* noop — fall through */
-            } else if (idx >= 0) {
-                if (op === MUT_DEL && pos > idx) {
-                    /** Deletion after last-found — unaffected */
-                    return prev;
-                }
-                if (op === MUT_ADD && args._val.length <= 2) {
-                    /**
-                     * Check new region for a later match. For findLast
-                     * we want the LAST match, so scan new region and
-                     * compare with shifted previous.
-                     */
-                    let end = Math.min(pos + len, source.length);
-                    let shiftedIdx = pos <= idx ? idx + len : idx;
-                    let lastFound = shiftedIdx;
-                    let lastVal = source[shiftedIdx];
-                    for (let i = pos; i < end; i++) {
-                        if (args._val(source[i], i, source, _node) && i > lastFound) {
-                            lastFound = i;
-                            lastVal = source[i];
-                        }
-                    }
-                    args._idx = lastFound;
-                    return lastVal;
-                }
-            } else {
-                if (!(op & MUT_ADD)) {
-                    return void 0;
-                }
-                if (args._val.length <= 2) {
-                    let end = Math.min(pos + len, source.length);
-                    let lastFound = -1;
-                    let lastVal = void 0;
-                    for (let i = pos; i < end; i++) {
-                        if (args._val(source[i], i, source, _node)) {
-                            lastFound = i;
-                            lastVal = source[i];
-                        }
-                    }
-                    args._idx = lastFound;
-                    return lastVal;
-                }
+  if (!(_node._flag & FLAG_INIT)) {
+    let mod = _node._getMod();
+    if (mod > 0) {
+      let op = mod & MUT_OP_MASK;
+      let pos = (mod >>> MUT_POS_SHIFT) & MUT_POS_MASK;
+      let len = (mod >>> MUT_LEN_SHIFT) & MUT_LEN_MASK;
+      let idx = args._idx;
+      if (op & MUT_SORT) {
+        /* noop — fall through */
+      } else if (idx >= 0) {
+        if (op === MUT_DEL && pos > idx) {
+          /** Deletion after last-found — unaffected */
+          return prev;
+        }
+        if (op === MUT_ADD && args._val.length <= 2) {
+          /**
+           * Check new region for a later match. For findLast
+           * we want the LAST match, so scan new region and
+           * compare with shifted previous.
+           */
+          let end = Math.min(pos + len, source.length);
+          let shiftedIdx = pos <= idx ? idx + len : idx;
+          let lastFound = shiftedIdx;
+          let lastVal = source[shiftedIdx];
+          for (let i = pos; i < end; i++) {
+            if (args._val(source[i], i, source, _node) && i > lastFound) {
+              lastFound = i;
+              lastVal = source[i];
             }
+          }
+          args._idx = lastFound;
+          return lastVal;
         }
-    }
-    let idx = -1;
-    for (let i = source.length - 1; i >= 0; i--) {
-        if (args._val(source[i], i, source, _node)) {
-            idx = i;
-            break;
+      } else {
+        if (!(op & MUT_ADD)) {
+          return void 0;
         }
+        if (args._val.length <= 2) {
+          let end = Math.min(pos + len, source.length);
+          let lastFound = -1;
+          let lastVal = void 0;
+          for (let i = pos; i < end; i++) {
+            if (args._val(source[i], i, source, _node)) {
+              lastFound = i;
+              lastVal = source[i];
+            }
+          }
+          args._idx = lastFound;
+          return lastVal;
+        }
+      }
     }
-    args._idx = idx;
-    return idx >= 0 ? source[idx] : void 0;
+  }
+  let idx = -1;
+  for (let i = source.length - 1; i >= 0; i--) {
+    if (args._val(source[i], i, source, _node)) {
+      idx = i;
+      break;
+    }
+  }
+  args._idx = idx;
+  return idx >= 0 ? source[idx] : void 0;
 }
 
 /**
@@ -653,10 +662,10 @@ function findLast_mut(source, _node, prev, args) {
  * @returns {Compute<T|undefined,Array<T>,null,(function(T, number, Array<T>): boolean)>}
  */
 SignalProto.findLast = ComputeProto.findLast = function (cb, opts, mutation) {
-    if (mutation) {
-        return computeArray(this, findLast_mut, { _val: cb, _idx: -1 }, opts);
-    }
-    return computeArray(this, findLast, cb, opts);
+  if (mutation) {
+    return computeArray(this, findLast_mut, { _val: cb, _idx: -1 }, opts);
+  }
+  return computeArray(this, findLast, cb, opts);
 };
 
 /**
@@ -667,12 +676,12 @@ SignalProto.findLast = ComputeProto.findLast = function (cb, opts, mutation) {
  * @returns {number}
  */
 function findLastIndex(source, _node, seed, cb) {
-    for (let i = source.length - 1; i >= 0; i--) {
-        if (cb(source[i], i, source, _node)) {
-            return i;
-        }
+  for (let i = source.length - 1; i >= 0; i--) {
+    if (cb(source[i], i, source, _node)) {
+      return i;
     }
-    return -1;
+  }
+  return -1;
 }
 
 /**
@@ -683,55 +692,55 @@ function findLastIndex(source, _node, seed, cb) {
  * @returns {number}
  */
 function findLastIndex_mut(source, _node, prev, cb) {
-    if (!(_node._flag & FLAG_INIT)) {
-        let mod = _node._getMod();
-        if (mod > 0) {
-            let op = mod & MUT_OP_MASK;
-            let pos = (mod >>> MUT_POS_SHIFT) & MUT_POS_MASK;
-            let len = (mod >>> MUT_LEN_SHIFT) & MUT_LEN_MASK;
-            if (op & MUT_SORT) {
-                /* noop — fall through */
-            } else if (prev >= 0) {
-                if (op === MUT_DEL && pos > prev) {
-                    return prev;
-                }
-                if (op === MUT_DEL && pos + len <= prev) {
-                    return prev - len;
-                }
-                if (op === MUT_ADD && cb.length <= 2) {
-                    let end = Math.min(pos + len, source.length);
-                    let shiftedPrev = pos <= prev ? prev + len : prev;
-                    let lastFound = shiftedPrev;
-                    for (let i = pos; i < end; i++) {
-                        if (cb(source[i], i, source, _node) && i > lastFound) {
-                            lastFound = i;
-                        }
-                    }
-                    return lastFound;
-                }
-            } else if (prev === -1) {
-                if (!(op & MUT_ADD)) {
-                    return -1;
-                }
-                if (cb.length <= 2) {
-                    let end = Math.min(pos + len, source.length);
-                    let lastFound = -1;
-                    for (let i = pos; i < end; i++) {
-                        if (cb(source[i], i, source, _node)) {
-                            lastFound = i;
-                        }
-                    }
-                    return lastFound;
-                }
+  if (!(_node._flag & FLAG_INIT)) {
+    let mod = _node._getMod();
+    if (mod > 0) {
+      let op = mod & MUT_OP_MASK;
+      let pos = (mod >>> MUT_POS_SHIFT) & MUT_POS_MASK;
+      let len = (mod >>> MUT_LEN_SHIFT) & MUT_LEN_MASK;
+      if (op & MUT_SORT) {
+        /* noop — fall through */
+      } else if (prev >= 0) {
+        if (op === MUT_DEL && pos > prev) {
+          return prev;
+        }
+        if (op === MUT_DEL && pos + len <= prev) {
+          return prev - len;
+        }
+        if (op === MUT_ADD && cb.length <= 2) {
+          let end = Math.min(pos + len, source.length);
+          let shiftedPrev = pos <= prev ? prev + len : prev;
+          let lastFound = shiftedPrev;
+          for (let i = pos; i < end; i++) {
+            if (cb(source[i], i, source, _node) && i > lastFound) {
+              lastFound = i;
             }
+          }
+          return lastFound;
         }
-    }
-    for (let i = source.length - 1; i >= 0; i--) {
-        if (cb(source[i], i, source, _node)) {
-            return i;
+      } else if (prev === -1) {
+        if (!(op & MUT_ADD)) {
+          return -1;
         }
+        if (cb.length <= 2) {
+          let end = Math.min(pos + len, source.length);
+          let lastFound = -1;
+          for (let i = pos; i < end; i++) {
+            if (cb(source[i], i, source, _node)) {
+              lastFound = i;
+            }
+          }
+          return lastFound;
+        }
+      }
     }
-    return -1;
+  }
+  for (let i = source.length - 1; i >= 0; i--) {
+    if (cb(source[i], i, source, _node)) {
+      return i;
+    }
+  }
+  return -1;
 }
 
 /**
@@ -742,7 +751,7 @@ function findLastIndex_mut(source, _node, prev, cb) {
  * @returns {Compute<number,Array<T>,null,(function(T, number, Array<T>): boolean)>}
  */
 SignalProto.findLastIndex = ComputeProto.findLastIndex = function (cb, opts, mutation) {
-    return computeArray(this, mutation ? findLastIndex_mut : findLastIndex, cb, opts);
+  return computeArray(this, mutation ? findLastIndex_mut : findLastIndex, cb, opts);
 };
 
 /**
@@ -753,7 +762,7 @@ SignalProto.findLastIndex = ComputeProto.findLastIndex = function (cb, opts, mut
  * @returns {!Array<T>}
  */
 function flat(source, _node, seed, depth) {
-    return source.flat(getVal(depth));
+  return source.flat(getVal(depth));
 }
 
 /**
@@ -762,7 +771,7 @@ function flat(source, _node, seed, depth) {
  * @returns {Compute<Array<T>,Array<T>,null,number|ReadonlySignal<number>|undefined>}
  */
 SignalProto.flat = ComputeProto.flat = function (depth) {
-    return computeArray(this, flat, depth, isSignal(depth) ? OPT_SETUP : 0);
+  return computeArray(this, flat, depth, isSignal(depth) ? OPT_SETUP : 0);
 };
 
 /**
@@ -773,18 +782,18 @@ SignalProto.flat = ComputeProto.flat = function (depth) {
  * @returns {Array<U>}
  */
 function flatMap(source, _node, seed, cb) {
-    let result = [];
-    for (let i = 0; i < source.length; i++) {
-        let items = cb(source[i], i, source, _node);
-        if (Array.isArray(items)) {
-            for (let j = 0; j < items.length; j++) {
-                result.push(items[j]);
-            }
-        } else {
-            result.push(items);
-        }
+  let result = [];
+  for (let i = 0; i < source.length; i++) {
+    let items = cb(source[i], i, source, _node);
+    if (Array.isArray(items)) {
+      for (let j = 0; j < items.length; j++) {
+        result.push(items[j]);
+      }
+    } else {
+      result.push(items);
     }
-    return result;
+  }
+  return result;
 }
 
 /**
@@ -795,7 +804,7 @@ function flatMap(source, _node, seed, cb) {
  * @returns {Compute<Array<U>,Array<T>,null,(function(T, number): !ReadonlyArray<U>)>}
  */
 SignalProto.flatMap = ComputeProto.flatMap = function (cb, opts) {
-    return computeArray(this, flatMap, cb, opts);
+  return computeArray(this, flatMap, cb, opts);
 };
 
 /**
@@ -805,9 +814,9 @@ SignalProto.flatMap = ComputeProto.flatMap = function (cb, opts) {
  * @returns {void}
  */
 function forEach(source, _node, cb) {
-    for (let i = 0; i < source.length; i++) {
-        cb(source[i], i, source, _node);
-    }
+  for (let i = 0; i < source.length; i++) {
+    cb(source[i], i, source, _node);
+  }
 }
 
 /**
@@ -817,11 +826,11 @@ function forEach(source, _node, cb) {
  * @returns {Effect<Array<T>,null, ((function(T, number): ((function(): void) | void)))>}
  */
 SignalProto.forEach = ComputeProto.forEach = function (cb, opts) {
-    let flag = FLAG_BOUND | OPT_STABLE | (0 | opts);
-    let node = new Effect(flag, forEach, this, null, cb);
-    node._dep1slot = connect(this, node, -1);
-    startEffect(node);
-    return node;
+  let flag = FLAG_BOUND | OPT_STABLE | (0 | opts);
+  let node = new Effect(flag, forEach, this, null, cb);
+  node._dep1slot = connect(this, node, -1);
+  startEffect(node);
+  return node;
 };
 
 // --- includes ---
@@ -834,7 +843,7 @@ SignalProto.forEach = ComputeProto.forEach = function (cb, opts) {
  * @returns {boolean}
  */
 function includes1(source, _node, seed, arg) {
-    return source.includes(/** @type {T} */(getVal(arg)));
+  return source.includes(/** @type {T} */ (getVal(arg)));
 }
 
 /**
@@ -846,63 +855,63 @@ function includes1(source, _node, seed, arg) {
  * @returns {boolean}
  */
 function includes1_mut(source, _node, prev, args) {
-    if (!(_node._flag & FLAG_INIT)) {
-        let mod = _node._getMod();
-        if (mod > 0) {
-            let op = mod & MUT_OP_MASK;
-            let pos = (mod >>> MUT_POS_SHIFT) & MUT_POS_MASK;
-            let len = (mod >>> MUT_LEN_SHIFT) & MUT_LEN_MASK;
-            let idx = args._idx;
-            if (op & MUT_SORT) {
-                /* noop — fall through */
-            } else if (idx >= 0) {
-                if (pos > idx) {
-                    /** Mutation after found position — unaffected */
-                    return true;
-                }
-                if (op === MUT_DEL) {
-                    if (pos + len <= idx) {
-                        /** Deletion before found — shift index, still included */
-                        args._idx = idx - len;
-                        return true;
-                    }
-                    /** Deletion overlaps — recompute */
-                } else if (op === MUT_ADD) {
-                    /** Check new region for target first */
-                    let target = getVal(args._val);
-                    let end = Math.min(pos + len, source.length);
-                    for (let i = pos; i < end; i++) {
-                        if (source[i] === target) {
-                            args._idx = i;
-                            return true;
-                        }
-                    }
-                    /** Still at shifted position */
-                    args._idx = idx + len;
-                    return true;
-                }
-            } else {
-                /** Previously not found (idx === -1) */
-                if (!(op & MUT_ADD)) {
-                    /** Only deletions — still not found */
-                    return false;
-                }
-                /** Check only new region */
-                let target = getVal(args._val);
-                let end = Math.min(pos + len, source.length);
-                for (let i = pos; i < end; i++) {
-                    if (source[i] === target) {
-                        args._idx = i;
-                        return true;
-                    }
-                }
-                return false;
-            }
+  if (!(_node._flag & FLAG_INIT)) {
+    let mod = _node._getMod();
+    if (mod > 0) {
+      let op = mod & MUT_OP_MASK;
+      let pos = (mod >>> MUT_POS_SHIFT) & MUT_POS_MASK;
+      let len = (mod >>> MUT_LEN_SHIFT) & MUT_LEN_MASK;
+      let idx = args._idx;
+      if (op & MUT_SORT) {
+        /* noop — fall through */
+      } else if (idx >= 0) {
+        if (pos > idx) {
+          /** Mutation after found position — unaffected */
+          return true;
         }
+        if (op === MUT_DEL) {
+          if (pos + len <= idx) {
+            /** Deletion before found — shift index, still included */
+            args._idx = idx - len;
+            return true;
+          }
+          /** Deletion overlaps — recompute */
+        } else if (op === MUT_ADD) {
+          /** Check new region for target first */
+          let target = getVal(args._val);
+          let end = Math.min(pos + len, source.length);
+          for (let i = pos; i < end; i++) {
+            if (source[i] === target) {
+              args._idx = i;
+              return true;
+            }
+          }
+          /** Still at shifted position */
+          args._idx = idx + len;
+          return true;
+        }
+      } else {
+        /** Previously not found (idx === -1) */
+        if (!(op & MUT_ADD)) {
+          /** Only deletions — still not found */
+          return false;
+        }
+        /** Check only new region */
+        let target = getVal(args._val);
+        let end = Math.min(pos + len, source.length);
+        for (let i = pos; i < end; i++) {
+          if (source[i] === target) {
+            args._idx = i;
+            return true;
+          }
+        }
+        return false;
+      }
     }
-    let idx = source.indexOf(/** @type {T} */(getVal(args._val)));
-    args._idx = idx;
-    return idx >= 0;
+  }
+  let idx = source.indexOf(/** @type {T} */ (getVal(args._val)));
+  args._idx = idx;
+  return idx >= 0;
 }
 
 /**
@@ -913,8 +922,8 @@ function includes1_mut(source, _node, prev, args) {
  * @returns {boolean}
  */
 function includes2(source, _node, seed, args) {
-    let arr = /** @type {!Array<*>} */(args);
-    return source.includes(/** @type {T} */(getVal(arr[0])), /** @type {number} */(getVal(arr[1])));
+  let arr = /** @type {!Array<*>} */ (args);
+  return source.includes(/** @type {T} */ (getVal(arr[0])), /** @type {number} */ (getVal(arr[1])));
 }
 
 /**
@@ -924,19 +933,18 @@ function includes2(source, _node, seed, args) {
  * @returns {Compute<boolean,Array<T>,null,*>}
  */
 SignalProto.includes = ComputeProto.includes = function (searchElement, fromIndex, mutation) {
-    if (typeof fromIndex === 'boolean') {
-        mutation = fromIndex;
-        fromIndex = void 0;
+  if (typeof fromIndex === "boolean") {
+    mutation = fromIndex;
+    fromIndex = void 0;
+  }
+  if (fromIndex === void 0) {
+    if (mutation) {
+      return computeArray(this, includes1_mut, { _val: searchElement, _idx: -1 }, 0);
     }
-    if (fromIndex === void 0) {
-        if (mutation) {
-            return computeArray(this, includes1_mut, { _val: searchElement, _idx: -1 }, 0);
-        }
-        return computeArray(this, includes1, searchElement, isSignal(searchElement) ? OPT_SETUP : 0);
-    }
-    return computeArray(this, includes2, /** @type {*} */([searchElement, fromIndex]), 0);
+    return computeArray(this, includes1, searchElement, isSignal(searchElement) ? OPT_SETUP : 0);
+  }
+  return computeArray(this, includes2, /** @type {*} */ ([searchElement, fromIndex]), 0);
 };
-
 
 // --- indexOf ---
 
@@ -948,7 +956,7 @@ SignalProto.includes = ComputeProto.includes = function (searchElement, fromInde
  * @returns {number}
  */
 function indexOf1(source, _node, seed, arg) {
-    return source.indexOf(/** @type {T} */(getVal(arg)));
+  return source.indexOf(/** @type {T} */ (getVal(arg)));
 }
 
 /**
@@ -961,55 +969,55 @@ function indexOf1(source, _node, seed, arg) {
  * @returns {number}
  */
 function indexOf1_mut(source, _node, prev, arg) {
-    if (!(_node._flag & FLAG_INIT)) {
-        let mod = _node._getMod();
-        if (mod > 0) {
-            let op = mod & MUT_OP_MASK;
-            let pos = (mod >>> MUT_POS_SHIFT) & MUT_POS_MASK;
-            let len = (mod >>> MUT_LEN_SHIFT) & MUT_LEN_MASK;
-            if (op & MUT_SORT) {
-                /* noop — fall through to full recompute */
-            } else if (prev >= 0) {
-                if (pos > prev) {
-                    /** Mutation entirely after found index — unaffected */
-                    return prev;
-                }
-                if (op === MUT_DEL) {
-                    if (pos + len <= prev) {
-                        /** Deletion entirely before found — shift left */
-                        return prev - len;
-                    }
-                    /** Deletion overlaps found position — recompute */
-                } else if (op === MUT_ADD) {
-                    /** Check new items; if target is there return earlier index */
-                    let target = getVal(arg);
-                    let end = Math.min(pos + len, source.length);
-                    for (let i = pos; i < end; i++) {
-                        if (source[i] === target) {
-                            return i;
-                        }
-                    }
-                    /** Not in new region — original shifted right */
-                    return prev + len;
-                }
-            } else if (prev === -1) {
-                if (!(op & MUT_ADD)) {
-                    /** Only deletions — still not found */
-                    return -1;
-                }
-                /** Items added — check only the new region */
-                let target = getVal(arg);
-                let end = Math.min(pos + len, source.length);
-                for (let i = pos; i < end; i++) {
-                    if (source[i] === target) {
-                        return i;
-                    }
-                }
-                return -1;
-            }
+  if (!(_node._flag & FLAG_INIT)) {
+    let mod = _node._getMod();
+    if (mod > 0) {
+      let op = mod & MUT_OP_MASK;
+      let pos = (mod >>> MUT_POS_SHIFT) & MUT_POS_MASK;
+      let len = (mod >>> MUT_LEN_SHIFT) & MUT_LEN_MASK;
+      if (op & MUT_SORT) {
+        /* noop — fall through to full recompute */
+      } else if (prev >= 0) {
+        if (pos > prev) {
+          /** Mutation entirely after found index — unaffected */
+          return prev;
         }
+        if (op === MUT_DEL) {
+          if (pos + len <= prev) {
+            /** Deletion entirely before found — shift left */
+            return prev - len;
+          }
+          /** Deletion overlaps found position — recompute */
+        } else if (op === MUT_ADD) {
+          /** Check new items; if target is there return earlier index */
+          let target = getVal(arg);
+          let end = Math.min(pos + len, source.length);
+          for (let i = pos; i < end; i++) {
+            if (source[i] === target) {
+              return i;
+            }
+          }
+          /** Not in new region — original shifted right */
+          return prev + len;
+        }
+      } else if (prev === -1) {
+        if (!(op & MUT_ADD)) {
+          /** Only deletions — still not found */
+          return -1;
+        }
+        /** Items added — check only the new region */
+        let target = getVal(arg);
+        let end = Math.min(pos + len, source.length);
+        for (let i = pos; i < end; i++) {
+          if (source[i] === target) {
+            return i;
+          }
+        }
+        return -1;
+      }
     }
-    return source.indexOf(/** @type {T} */(getVal(arg)));
+  }
+  return source.indexOf(/** @type {T} */ (getVal(arg)));
 }
 
 /**
@@ -1020,8 +1028,8 @@ function indexOf1_mut(source, _node, prev, arg) {
  * @returns {number}
  */
 function indexOf2(source, _node, seed, args) {
-    let arr = /** @type {!Array<*>} */(args);
-    return source.indexOf(/** @type {T} */(getVal(arr[0])), /** @type {number} */(getVal(arr[1])));
+  let arr = /** @type {!Array<*>} */ (args);
+  return source.indexOf(/** @type {T} */ (getVal(arr[0])), /** @type {number} */ (getVal(arr[1])));
 }
 
 /**
@@ -1031,17 +1039,16 @@ function indexOf2(source, _node, seed, args) {
  * @returns {Compute<number, Array<T>, null, *>}
  */
 SignalProto.indexOf = ComputeProto.indexOf = function (searchElement, fromIndex, mutation) {
-    if (typeof fromIndex === 'boolean') {
-        mutation = fromIndex;
-        fromIndex = void 0;
-    }
-    if (fromIndex === void 0) {
-        let fn = mutation ? indexOf1_mut : indexOf1;
-        return computeArray(this, fn, searchElement, isSignal(searchElement) ? OPT_SETUP : 0);
-    }
-    return computeArray(this, indexOf2, /** @type {*} */([searchElement, fromIndex]), 0);
+  if (typeof fromIndex === "boolean") {
+    mutation = fromIndex;
+    fromIndex = void 0;
+  }
+  if (fromIndex === void 0) {
+    let fn = mutation ? indexOf1_mut : indexOf1;
+    return computeArray(this, fn, searchElement, isSignal(searchElement) ? OPT_SETUP : 0);
+  }
+  return computeArray(this, indexOf2, /** @type {*} */ ([searchElement, fromIndex]), 0);
 };
-
 
 // --- join ---
 
@@ -1053,7 +1060,9 @@ SignalProto.indexOf = ComputeProto.indexOf = function (searchElement, fromIndex,
  * @returns {string}
  */
 function join(source, _node, seed, separator) {
-    return source.join(separator !== undefined ? /** @type {string} */(getVal(separator)) : undefined);
+  return source.join(
+    separator !== undefined ? /** @type {string} */ (getVal(separator)) : undefined,
+  );
 }
 
 /**
@@ -1062,9 +1071,8 @@ function join(source, _node, seed, separator) {
  * @returns {Compute<string, Array<T>, null, string | ReadonlySignal<string> | undefined>}
  */
 SignalProto.join = ComputeProto.join = function (separator) {
-    return computeArray(this, join, separator, isSignal(separator) ? OPT_SETUP : 0);
+  return computeArray(this, join, separator, isSignal(separator) ? OPT_SETUP : 0);
 };
-
 
 // --- keys ---
 
@@ -1076,7 +1084,7 @@ SignalProto.join = ComputeProto.join = function (separator) {
  * @returns {!IteratorIterable<number>}
  */
 function keys(source, _node, seed, args) {
-    return source.keys();
+  return source.keys();
 }
 
 /**
@@ -1084,9 +1092,8 @@ function keys(source, _node, seed, args) {
  * @returns {Compute<!IteratorIterable<number>, Array<T>, null, undefined>}
  */
 SignalProto.keys = ComputeProto.keys = function () {
-    return computeArray(this, keys, void 0, 0);
+  return computeArray(this, keys, void 0, 0);
 };
-
 
 // --- map ---
 
@@ -1098,11 +1105,11 @@ SignalProto.keys = ComputeProto.keys = function () {
  * @returns {Array<U>}
  */
 function map(source, _node, seed, cb) {
-    let result = new Array(source.length);
-    for (let i = 0; i < source.length; i++) {
-        result[i] = cb(source[i], i, source, _node);
-    }
-    return result;
+  let result = new Array(source.length);
+  for (let i = 0; i < source.length; i++) {
+    result[i] = cb(source[i], i, source, _node);
+  }
+  return result;
 }
 
 /**
@@ -1113,7 +1120,7 @@ function map(source, _node, seed, cb) {
  * @returns {Compute<Array<U>,Array<T>,null, function(T, number, Array<T>): U>}
  */
 SignalProto.map = ComputeProto.map = function (cb, opts) {
-    return computeArray(this, map, cb, opts);
+  return computeArray(this, map, cb, opts);
 };
 
 // --- reduce ---
@@ -1128,15 +1135,15 @@ SignalProto.map = ComputeProto.map = function (cb, opts) {
  * @returns {U}
  */
 function reduce1(source, _node, seed, arg) {
-    let cb = /** @type {function(U, T, number, Array<T>): U} */(arg);
-    if (source.length === 0) {
-        throw new TypeError('Reduce of empty array with no initial value');
-    }
-    let acc = /** @type {U} */(source[0]);
-    for (let i = 1; i < source.length; i++) {
-        acc = cb(acc, source[i], i, source, _node);
-    }
-    return acc;
+  let cb = /** @type {function(U, T, number, Array<T>): U} */ (arg);
+  if (source.length === 0) {
+    throw new TypeError("Reduce of empty array with no initial value");
+  }
+  let acc = /** @type {U} */ (source[0]);
+  for (let i = 1; i < source.length; i++) {
+    acc = cb(acc, source[i], i, source, _node);
+  }
+  return acc;
 }
 
 /**
@@ -1147,14 +1154,14 @@ function reduce1(source, _node, seed, arg) {
  * @returns {U}
  */
 function reduce2(source, _node, seed, args) {
-    let arr = /** @type {!Array<*>} */(args);
-    let cb = /** @type {function(U, T, number, Array<T>): U} */(arr[0]);
-    let initialValue = /** @type {U} */(getVal(arr[1]));
-    let acc = initialValue;
-    for (let i = 0; i < source.length; i++) {
-        acc = cb(acc, source[i], i, source, _node);
-    }
-    return acc;
+  let arr = /** @type {!Array<*>} */ (args);
+  let cb = /** @type {function(U, T, number, Array<T>): U} */ (arr[0]);
+  let initialValue = /** @type {U} */ (getVal(arr[1]));
+  let acc = initialValue;
+  for (let i = 0; i < source.length; i++) {
+    acc = cb(acc, source[i], i, source, _node);
+  }
+  return acc;
 }
 
 /**
@@ -1166,16 +1173,15 @@ function reduce2(source, _node, seed, args) {
  * @returns {Compute<U, Array<T>, null, *>}
  */
 SignalProto.reduce = ComputeProto.reduce = function (cb, initialValue, opts) {
-    let unstable = opts !== OPT_STABLE;
-    if (arguments.length === 1) {
-        return /** @type {Compute<U, Array<T>, null, *>} */(
-            computeArray(this, reduce1, /** @type {*} */(cb), opts)
-        );
-    }
-    unstable = unstable || isSignal(initialValue);
-    return computeArray(this, reduce2, /** @type {*} */([cb, initialValue]), opts);
+  let unstable = opts !== OPT_STABLE;
+  if (arguments.length === 1) {
+    return /** @type {Compute<U, Array<T>, null, *>} */ (
+      computeArray(this, reduce1, /** @type {*} */ (cb), opts)
+    );
+  }
+  unstable = unstable || isSignal(initialValue);
+  return computeArray(this, reduce2, /** @type {*} */ ([cb, initialValue]), opts);
 };
-
 
 // --- reduceRight ---
 
@@ -1187,15 +1193,15 @@ SignalProto.reduce = ComputeProto.reduce = function (cb, initialValue, opts) {
  * @returns {U}
  */
 function reduceRight1(source, _node, seed, arg) {
-    let cb = /** @type {function(U, T, number, Array<T>): U} */(arg);
-    if (source.length === 0) {
-        throw new TypeError('Reduce of empty array with no initial value');
-    }
-    let acc = /** @type {U} */(source[source.length - 1]);
-    for (let i = source.length - 2; i >= 0; i--) {
-        acc = cb(acc, source[i], i, source, _node);
-    }
-    return acc;
+  let cb = /** @type {function(U, T, number, Array<T>): U} */ (arg);
+  if (source.length === 0) {
+    throw new TypeError("Reduce of empty array with no initial value");
+  }
+  let acc = /** @type {U} */ (source[source.length - 1]);
+  for (let i = source.length - 2; i >= 0; i--) {
+    acc = cb(acc, source[i], i, source, _node);
+  }
+  return acc;
 }
 
 /**
@@ -1206,14 +1212,14 @@ function reduceRight1(source, _node, seed, arg) {
  * @returns {U}
  */
 function reduceRight2(source, _node, seed, args) {
-    let arr = /** @type {!Array<*>} */(args);
-    let cb = /** @type {function(U, T, number, Array<T>): U} */(arr[0]);
-    let initialValue = /** @type {U} */(getVal(arr[1]));
-    let acc = initialValue;
-    for (let i = source.length - 1; i >= 0; i--) {
-        acc = cb(acc, source[i], i, source, _node);
-    }
-    return acc;
+  let arr = /** @type {!Array<*>} */ (args);
+  let cb = /** @type {function(U, T, number, Array<T>): U} */ (arr[0]);
+  let initialValue = /** @type {U} */ (getVal(arr[1]));
+  let acc = initialValue;
+  for (let i = source.length - 1; i >= 0; i--) {
+    acc = cb(acc, source[i], i, source, _node);
+  }
+  return acc;
 }
 
 /**
@@ -1225,14 +1231,14 @@ function reduceRight2(source, _node, seed, args) {
  * @returns {Compute<U, Array<T>, null, *>}
  */
 SignalProto.reduceRight = ComputeProto.reduceRight = function (cb, initialValue, opts) {
-    let unstable = opts !== OPT_STABLE;
-    if (arguments.length === 1) {
-        return /** @type {Compute<U, Array<T>, null, *>} */(
-            computeArray(this, reduceRight1, /** @type {*} */(cb), opts)
-        );
-    }
-    unstable = unstable || isSignal(initialValue);
-    return computeArray(this, reduceRight2, /** @type {*} */([cb, initialValue]), opts);
+  let unstable = opts !== OPT_STABLE;
+  if (arguments.length === 1) {
+    return /** @type {Compute<U, Array<T>, null, *>} */ (
+      computeArray(this, reduceRight1, /** @type {*} */ (cb), opts)
+    );
+  }
+  unstable = unstable || isSignal(initialValue);
+  return computeArray(this, reduceRight2, /** @type {*} */ ([cb, initialValue]), opts);
 };
 
 // --- slice ---
@@ -1245,7 +1251,7 @@ SignalProto.reduceRight = ComputeProto.reduceRight = function (cb, initialValue,
  * @returns {Array<T>}
  */
 function slice0(source, _node, seed, args) {
-    return source.slice();
+  return source.slice();
 }
 
 /**
@@ -1256,7 +1262,7 @@ function slice0(source, _node, seed, args) {
  * @returns {Array<T>}
  */
 function slice1(source, _node, seed, arg) {
-    return source.slice(/** @type {number} */(getVal(arg)));
+  return source.slice(/** @type {number} */ (getVal(arg)));
 }
 
 /**
@@ -1267,8 +1273,11 @@ function slice1(source, _node, seed, arg) {
  * @returns {Array<T>}
  */
 function slice2(source, _node, seed, args) {
-    let arr = /** @type {!Array<*>} */(args);
-    return source.slice(/** @type {number} */(getVal(arr[0])), /** @type {number} */(getVal(arr[1])));
+  let arr = /** @type {!Array<*>} */ (args);
+  return source.slice(
+    /** @type {number} */ (getVal(arr[0])),
+    /** @type {number} */ (getVal(arr[1])),
+  );
 }
 
 /**
@@ -1278,16 +1287,15 @@ function slice2(source, _node, seed, args) {
  * @returns {Compute<Array<T>, Array<T>, null, *>}
  */
 SignalProto.slice = ComputeProto.slice = function (start, end) {
-    let len = arguments.length;
-    if (len === 0) {
-        return computeArray(this, slice0, void 0);
-    } else if (len === 1) {
-        return computeArray(this, slice1, start, 0);
-    }
-    let unstable = isSignal(start) || isSignal(end);
-    return computeArray(this, slice2, /** @type {*} */([start, end]), 0);
+  let len = arguments.length;
+  if (len === 0) {
+    return computeArray(this, slice0, void 0);
+  } else if (len === 1) {
+    return computeArray(this, slice1, start, 0);
+  }
+  let unstable = isSignal(start) || isSignal(end);
+  return computeArray(this, slice2, /** @type {*} */ ([start, end]), 0);
 };
-
 
 // --- some ---
 
@@ -1299,43 +1307,43 @@ SignalProto.slice = ComputeProto.slice = function (start, end) {
  * @returns {boolean}
  */
 function some(source, _node, prev, cb) {
-    if (!(_node._flag & FLAG_INIT)) {
-        let mod = _node._getMod();
-        if (mod > 0) {
-            let op = mod & MUT_OP_MASK;
-            if (prev === false) {
-                if (!(op & (MUT_ADD | MUT_SORT))) {
-                    /** Only DEL: removing items can't make some() true */
-                    return false;
-                }
-                if (!(op & MUT_SORT) && cb.length <= 2) {
-                    /**
-                     * ADD (possibly with DEL), callback ignores index.
-                     * Existing items still don't match — check modified region.
-                     */
-                    let pos = (mod >>> MUT_POS_SHIFT) & MUT_POS_MASK;
-                    let len = (mod >>> MUT_LEN_SHIFT) & MUT_LEN_MASK;
-                    let end = Math.min(pos + len, source.length);
-                    for (let i = pos; i < end; i++) {
-                        if (cb(source[i], i, source, _node)) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-            }
-            if (prev === true && !(op & (MUT_DEL | MUT_SORT)) && cb.length <= 2) {
-                /** Only ADD + callback ignores index: matching item still present */
-                return true;
-            }
+  if (!(_node._flag & FLAG_INIT)) {
+    let mod = _node._getMod();
+    if (mod > 0) {
+      let op = mod & MUT_OP_MASK;
+      if (prev === false) {
+        if (!(op & (MUT_ADD | MUT_SORT))) {
+          /** Only DEL: removing items can't make some() true */
+          return false;
         }
-    }
-    for (let i = 0; i < source.length; i++) {
-        if (cb(source[i], i, source, _node)) {
-            return true;
+        if (!(op & MUT_SORT) && cb.length <= 2) {
+          /**
+           * ADD (possibly with DEL), callback ignores index.
+           * Existing items still don't match — check modified region.
+           */
+          let pos = (mod >>> MUT_POS_SHIFT) & MUT_POS_MASK;
+          let len = (mod >>> MUT_LEN_SHIFT) & MUT_LEN_MASK;
+          let end = Math.min(pos + len, source.length);
+          for (let i = pos; i < end; i++) {
+            if (cb(source[i], i, source, _node)) {
+              return true;
+            }
+          }
+          return false;
         }
+      }
+      if (prev === true && !(op & (MUT_DEL | MUT_SORT)) && cb.length <= 2) {
+        /** Only ADD + callback ignores index: matching item still present */
+        return true;
+      }
     }
-    return false;
+  }
+  for (let i = 0; i < source.length; i++) {
+    if (cb(source[i], i, source, _node)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -1345,9 +1353,8 @@ function some(source, _node, prev, cb) {
  * @returns {Compute<boolean, Array<T>, null, function(T, number, Array<T>): boolean>}
  */
 SignalProto.some = ComputeProto.some = function (cb, opts) {
-    return computeArray(this, some, cb, opts);
+  return computeArray(this, some, cb, opts);
 };
-
 
 // --- values ---
 
@@ -1359,7 +1366,7 @@ SignalProto.some = ComputeProto.some = function (cb, opts) {
  * @returns {!IteratorIterable<T>}
  */
 function values(source, _node, seed, args) {
-    return source.values();
+  return source.values();
 }
 
 /**
@@ -1367,7 +1374,7 @@ function values(source, _node, seed, args) {
  * @returns {Compute<!IteratorIterable<T>, Array<T>, null, undefined>}
  */
 SignalProto.values = ComputeProto.values = function () {
-    return computeArray(this, values, void 0);
+  return computeArray(this, values, void 0);
 };
 
 /**
@@ -1378,12 +1385,12 @@ SignalProto.values = ComputeProto.values = function () {
  * @returns {void}
  */
 SignalProto.copyWithin = function (target, start, end) {
-    if (IDLE) {
-        this._value.copyWithin(target, start, end);
-        modify(this, 0);
-    } else {
-        schedule(this, [target, start, end], copyWithin);
-    }
+  if (IDLE) {
+    this._value.copyWithin(target, start, end);
+    modify(this, 0);
+  } else {
+    schedule(this, [target, start, end], copyWithin);
+  }
 };
 
 /**
@@ -1395,16 +1402,16 @@ SignalProto.copyWithin = function (target, start, end) {
  * @returns {void}
  */
 SignalProto.fill = function (value, start, end) {
-    if (IDLE) {
-        this._value.fill(value, start, end);
-        modify(this, 0);
+  if (IDLE) {
+    this._value.fill(value, start, end);
+    modify(this, 0);
+  } else {
+    if (arguments.length === 1) {
+      schedule(this, value, fill);
     } else {
-        if (arguments.length === 1) {
-            schedule(this, value, fill);
-        } else {
-            schedule(this, [value, start, end], fillRange);
-        }
+      schedule(this, [value, start, end], fillRange);
     }
+  }
 };
 
 /**
@@ -1413,12 +1420,12 @@ SignalProto.fill = function (value, start, end) {
  * @returns {void}
  */
 SignalProto.pop = function () {
-    if (IDLE) {
-        this._value.pop();
-        modify(this, encode(MUT_DEL, this._value.length, 1));
-    } else {
-        schedule(this, null, pop);
-    }
+  if (IDLE) {
+    this._value.pop();
+    modify(this, encode(MUT_DEL, this._value.length, 1));
+  } else {
+    schedule(this, null, pop);
+  }
 };
 
 /**
@@ -1428,25 +1435,25 @@ SignalProto.pop = function () {
  * @returns {void}
  */
 SignalProto.push = function (...items) {
-    let len = items.length;
-    if (len > 0) {
-        let arr = this._value;
-        let pos = arr.length;
-        if (IDLE) {
-            if (len === 1) {
-                arr.push(items[0]);
-            } else {
-                arr.push(...items);
-            }
-            modify(this, encode(MUT_ADD, pos, len));
-        } else {
-            if (len === 1) {
-                schedule(this, items[0], push);
-            } else {
-                schedule(this, items, pushArray);
-            }
-        }
+  let len = items.length;
+  if (len > 0) {
+    let arr = this._value;
+    let pos = arr.length;
+    if (IDLE) {
+      if (len === 1) {
+        arr.push(items[0]);
+      } else {
+        arr.push(...items);
+      }
+      modify(this, encode(MUT_ADD, pos, len));
+    } else {
+      if (len === 1) {
+        schedule(this, items[0], push);
+      } else {
+        schedule(this, items, pushArray);
+      }
     }
+  }
 };
 
 /**
@@ -1455,12 +1462,12 @@ SignalProto.push = function (...items) {
  * @returns {void}
  */
 SignalProto.reverse = function () {
-    if (IDLE) {
-        this._value.reverse();
-        modify(this, encode(MUT_SORT, 0, 0));
-    } else {
-        schedule(this, null, reverse);
-    }
+  if (IDLE) {
+    this._value.reverse();
+    modify(this, encode(MUT_SORT, 0, 0));
+  } else {
+    schedule(this, null, reverse);
+  }
 };
 
 /**
@@ -1469,12 +1476,12 @@ SignalProto.reverse = function () {
  * @returns {void}
  */
 SignalProto.shift = function () {
-    if (IDLE) {
-        this._value.shift();
-        modify(this, encode(MUT_DEL, 0, 1));
-    } else {
-        schedule(this, null, shift);
-    }
+  if (IDLE) {
+    this._value.shift();
+    modify(this, encode(MUT_DEL, 0, 1));
+  } else {
+    schedule(this, null, shift);
+  }
 };
 
 /**
@@ -1484,12 +1491,12 @@ SignalProto.shift = function () {
  * @returns {void}
  */
 SignalProto.sort = function (compareFn) {
-    if (IDLE) {
-        this._value.sort(compareFn);
-        modify(this, encode(MUT_SORT, 0, 0));
-    } else {
-        schedule(this, compareFn, sort);
-    }
+  if (IDLE) {
+    this._value.sort(compareFn);
+    modify(this, encode(MUT_SORT, 0, 0));
+  } else {
+    schedule(this, compareFn, sort);
+  }
 };
 
 /**
@@ -1501,25 +1508,25 @@ SignalProto.sort = function (compareFn) {
  * @returns {void}
  */
 SignalProto.splice = function (start, deleteCount, ...items) {
-    if (IDLE) {
-        let arr = this._value;
-        let pos = start < 0 ? Math.max(0, arr.length + start) : Math.min(start, arr.length);
-        if (items.length === 0) {
-            if (arguments.length === 1) {
-                deleteCount = arr.length - pos;
-                arr.splice(start);
-            } else {
-                arr.splice(start, deleteCount);
-            }
-        } else {
-            arr.splice(start, deleteCount, ...items);
-        }
-        let addLen = items.length;
-        let op = (deleteCount > 0 ? MUT_DEL : 0) | (addLen > 0 ? MUT_ADD : 0);
-        modify(this, op > 0 ? encode(op, pos, Math.max(deleteCount, addLen)) : 0);
+  if (IDLE) {
+    let arr = this._value;
+    let pos = start < 0 ? Math.max(0, arr.length + start) : Math.min(start, arr.length);
+    if (items.length === 0) {
+      if (arguments.length === 1) {
+        deleteCount = arr.length - pos;
+        arr.splice(start);
+      } else {
+        arr.splice(start, deleteCount);
+      }
     } else {
-        schedule(this, [start, deleteCount, items], splice);
+      arr.splice(start, deleteCount, ...items);
     }
+    let addLen = items.length;
+    let op = (deleteCount > 0 ? MUT_DEL : 0) | (addLen > 0 ? MUT_ADD : 0);
+    modify(this, op > 0 ? encode(op, pos, Math.max(deleteCount, addLen)) : 0);
+  } else {
+    schedule(this, [start, deleteCount, items], splice);
+  }
 };
 
 /**
@@ -1529,23 +1536,23 @@ SignalProto.splice = function (start, deleteCount, ...items) {
  * @returns {void}
  */
 SignalProto.unshift = function (...items) {
-    let len = items.length;
-    if (len > 0) {
-        if (IDLE) {
-            if (len === 1) {
-                this._value.unshift(items[0]);
-            } else {
-                this._value.unshift(...items);
-            }
-            modify(this, encode(MUT_ADD, 0, len));
-        } else {
-            if (len === 1) {
-                schedule(this, items[0], unshift);
-            } else {
-                schedule(this, items, unshiftArray);
-            }
-        }
+  let len = items.length;
+  if (len > 0) {
+    if (IDLE) {
+      if (len === 1) {
+        this._value.unshift(items[0]);
+      } else {
+        this._value.unshift(...items);
+      }
+      modify(this, encode(MUT_ADD, 0, len));
+    } else {
+      if (len === 1) {
+        schedule(this, items[0], unshift);
+      } else {
+        schedule(this, items, unshiftArray);
+      }
     }
+  }
 };
 
 export { computeArray, signal as list };

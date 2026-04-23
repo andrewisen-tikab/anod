@@ -21,7 +21,9 @@ describe("list context access", () => {
       const l = list([1, 2]);
       let cleaned = 0;
       const m = l.map((val, idx, arr, c) => {
-        c.cleanup(() => { cleaned++; });
+        c.cleanup(() => {
+          cleaned++;
+        });
         return val * 10;
       });
       expect(m.get()).toEqual([10, 20]);
@@ -40,7 +42,10 @@ describe("list context access", () => {
         return val > 0 ? "positive" : "negative";
       });
       let downstream = 0;
-      const d = compute(m, () => { downstream++; return 0; });
+      const d = compute(m, () => {
+        downstream++;
+        return 0;
+      });
       d.get();
       expect(downstream).toBe(1);
 
@@ -92,7 +97,9 @@ describe("list context access", () => {
       const l = list([1, 2, 3]);
       let cleaned = 0;
       const f = l.filter((val, idx, arr, c) => {
-        c.cleanup(() => { cleaned++; });
+        c.cleanup(() => {
+          cleaned++;
+        });
         return val % 2 === 1;
       });
       expect(f.get()).toEqual([1, 3]);

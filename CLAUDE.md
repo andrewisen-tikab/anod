@@ -1,37 +1,56 @@
 # Instructions for Claude
+
 ## Code guidelines
+
 Always run `bun make` before you run `bun test`. All tests target the bundled output, not the source files directly, to ensure that the final bundle ready to be shipped works correctly.
-### Branches 
+
+### Branches
+
 Always expand branches fully, like this:
+
 ```ts
 if (myStatement) {
-    return true; // GOOD
+  return true; // GOOD
 }
 ```
-Do *not* write code like this:
+
+Do _not_ write code like this:
+
 ```ts
 if (myStatement) return false; // BAD
-if (myStatement) { return false; } // BAD
+if (myStatement) {
+  return false;
+} // BAD
 ```
+
 ### Allocation
+
 Never use anything other than `boolean` or `number`, if those suffice. For enums, matching, etc, always create a const value at top level, like this:
+
 ```ts
 const FLAG_STALE = 1;
 const FLAG_PENDING = 2;
 /** @param {number} flag */
-function setFlag(node, flag) { }
+function setFlag(node, flag) {}
 ```
-Do *not* write code like this:
+
+Do _not_ write code like this:
+
 ```ts
 /** @param {string} flag - 'stale' or 'pending' */
-function setFlag(node, flag) { }
+function setFlag(node, flag) {}
 ```
+
 Always avoid heap allocations when possible. Prefer code duplication over heap allocs. Never allocate strings, arrays, destructured return arguments unless absolutely necessary.
 
 anod is extremely sensitive to V8 optimization. Code that looks equivalent often isn't — prototype methods beat free functions in polymorphic dispatch, `Array.prototype.pop()` beats `arr.length--` for swap-remove, and multiple call sites can prevent inlining that a single call site with an intermediate variable enables. Always prefer small flat structs with inline fields for the common case and arrays only on overflow.
+
 ### Comments
+
 Always write meaningful comments about how the code works. Do not insert meaningless section comments. Prefer JSDoc style comments over regular // comments.
+
 ### JSDoc
+
 If you can, add correct JSDoc type definitions. Because we "fake" a lot of typescript features, this project is built on javascript and uses jsdoc for type safety, instead of Typescript. That way, we can fully create a virtual API through typescript that fakes the node types, flags etc.
 
 ## Library overview
@@ -106,6 +125,7 @@ This is **critical for performance**: V8 must see both bound and unbound paths e
 **Unbound** nodes are created via `compute(fn)` / `effect(fn)` / etc. The callback receives the node itself as first argument, exposing `read()` for dynamic dep tracking.
 
 Callback signatures:
+
 - **Bound sync**: `(val, c, prev, args) => ...` — `val` first so `compute(age, a => a > 18)` is natural; `c` second when helpers are needed.
 - **Unbound sync**: `(c, prev, args) => ...` — `c` is the node itself.
 - **Bound async**: `(val, c, prev, args) => ...` — same as sync. `c` is always needed for async because of cleanup / future suspend.
@@ -129,7 +149,6 @@ Tasks and spawns are async nodes. The body returns a Promise (or async iterable)
 
 **Stale activation semantics**: if a task re-runs before its previous promise resolves, the old activation is logically abandoned. When the old promise resolves, the library checks the node's current activation id — if it doesn't match, the resolution is discarded. This prevents stale values from overwriting newer results.
 
-
 ### Batching
 
 `batch(fn)` defers propagation until `fn` completes. Signal sets within a batch coalesce via `SIGNAL_QUEUE` / `SIGNAL_OPS`. Nested `batch()` calls inline. `batch` is distinct from `start` — `batch` is pure coalescing within an existing transaction, while `start` is the transaction loop itself.
@@ -143,6 +162,7 @@ Owner nodes track `_owned` children. Disposal is recursive. Cleanup functions ar
 ### Error handling
 
 All errors in anod are `{ error, type }` POJOs with three type constants:
+
 - `REFUSE` (1) — expected error from `c.refuse(val)`. Non-throwing, the compute returns the error value.
 - `PANIC` (2) — expected error from `c.panic(val)`. Throws, but `FLAG_PANIC` distinguishes it from unexpected errors.
 - `FATAL` (3) — unexpected error. Any uncaught throw without `FLAG_PANIC` is wrapped as `{ error: thrownValue, type: FATAL }`.

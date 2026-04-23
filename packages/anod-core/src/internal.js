@@ -43,5 +43,5 @@ export {
   Signal,
   Compute,
   Effect,
-  Root
+  Root,
 } from "./core.js";

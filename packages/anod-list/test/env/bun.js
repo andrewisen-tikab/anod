@@ -1,8 +1,8 @@
-export { describe, test, expect } from 'bun:test';
+export { describe, test, expect } from "bun:test";
 
 /** Forces a full stop-the-world GC via Bun's native API. */
 export function forceGC() {
-    Bun.gc(true);
+  Bun.gc(true);
 }
 
 /**
@@ -10,10 +10,10 @@ export function forceGC() {
  * @param {() => void} callback
  */
 export function collect(callback) {
-    setTimeout(() => {
-        forceGC();
-        callback();
-    }, 10);
+  setTimeout(() => {
+    forceGC();
+    callback();
+  }, 10);
 }
 
 /**
@@ -22,6 +22,6 @@ export function collect(callback) {
  * targets are finalized before asserting.
  */
 export async function collectAsync() {
-    await new Promise((resolve) => collect(() => resolve()));
-    await new Promise((resolve) => collect(() => resolve()));
+  await new Promise((resolve) => collect(() => resolve()));
+  await new Promise((resolve) => collect(() => resolve()));
 }

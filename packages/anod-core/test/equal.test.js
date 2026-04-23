@@ -1,7 +1,10 @@
 import { describe, test, expect } from "#test-runner";
 import { signal, root } from "#anod";
 
-let c; root((_c) => { c = _c; });
+let c;
+root((_c) => {
+  c = _c;
+});
 
 describe("c.equal()", () => {
   describe("c.equal() / c.equal(true) — suppress notification", () => {
@@ -15,7 +18,9 @@ describe("c.equal()", () => {
         cx.equal(clamped === prev);
         return clamped;
       }, 5);
-      c.effect(c1, () => { runs++; });
+      c.effect(c1, () => {
+        runs++;
+      });
       expect(runs).toBe(1);
       expect(c1.get()).toBe(5);
 
@@ -49,7 +54,9 @@ describe("c.equal()", () => {
         cx.equal();
         return val;
       });
-      c.effect(c1, () => { runs++; });
+      c.effect(c1, () => {
+        runs++;
+      });
       expect(runs).toBe(1);
 
       s1.set(2);
@@ -72,7 +79,9 @@ describe("c.equal()", () => {
         }
         return obj;
       });
-      c.effect(c1, () => { runs++; });
+      c.effect(c1, () => {
+        runs++;
+      });
       expect(runs).toBe(1);
 
       /** Same shape, different reference → equal(true) suppresses. */
@@ -89,12 +98,18 @@ describe("c.equal()", () => {
     test("bound compute with equal suppression", () => {
       const s1 = signal(5);
       let runs = 0;
-      const c1 = c.compute(s1, (val, cx, prev) => {
-        let clamped = Math.min(val, 10);
-        cx.equal(clamped === prev);
-        return clamped;
-      }, 5);
-      c.effect(c1, () => { runs++; });
+      const c1 = c.compute(
+        s1,
+        (val, cx, prev) => {
+          let clamped = Math.min(val, 10);
+          cx.equal(clamped === prev);
+          return clamped;
+        },
+        5,
+      );
+      c.effect(c1, () => {
+        runs++;
+      });
       expect(runs).toBe(1);
 
       s1.set(15);
@@ -118,7 +133,9 @@ describe("c.equal()", () => {
         cx.equal(false);
         return 42;
       });
-      c.effect(c1, () => { runs++; });
+      c.effect(c1, () => {
+        runs++;
+      });
       expect(runs).toBe(1);
 
       /** Value stays 42 but equal(false) forces notification. */
@@ -144,7 +161,9 @@ describe("c.equal()", () => {
         }
         return val;
       });
-      c.effect(c1, () => { runs++; });
+      c.effect(c1, () => {
+        runs++;
+      });
       expect(runs).toBe(1);
 
       /** 1 → 2: even, equal() called → suppressed. */

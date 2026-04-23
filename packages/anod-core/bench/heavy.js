@@ -6,14 +6,14 @@ import { createSignal, mapArray } from "solid-js/dist/solid.js";
 
 if (typeof global.gc !== "function") {
   console.warn(
-    "⚠️  GC is not exposed. Restart with `node --expose-gc` to allow manual garbage collection."
+    "⚠️  GC is not exposed. Restart with `node --expose-gc` to allow manual garbage collection.",
   );
 }
 
 // --- Seeded RNG ---
 function mulberry32(seed) {
   return function () {
-    var t = seed += 0x6D2B79F5;
+    var t = (seed += 0x6d2b79f5);
     t = Math.imul(t ^ (t >>> 15), t | 1);
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
@@ -46,7 +46,7 @@ async function collectGarbage() {
   if (typeof global.gc !== "function") return;
   for (let i = 0; i < 3; i++) {
     global.gc();
-    await new Promise(r => setTimeout(r, 100));
+    await new Promise((r) => setTimeout(r, 100));
   }
 }
 
@@ -59,7 +59,7 @@ function formatBytes(bytes) {
 
 // generate input data for each id
 function generateDataForId(id) {
-  const rng = mulberry32(id + 0xABCDEF);
+  const rng = mulberry32(id + 0xabcdef);
   const specs = [];
   for (let i = 0; i < 5; i++) {
     specs.push(`Spec ${i + 1}: ${rng().toFixed(2)}`);
@@ -69,7 +69,7 @@ function generateDataForId(id) {
     title: `Product #${id}`,
     imageUrl: `https://picsum.photos/seed/${id}/100/100`,
     description: `Description for product ${id}`,
-    specs
+    specs,
   };
 }
 
@@ -80,18 +80,18 @@ function createComponent(data) {
   // simulate cost of creating 30 nodes
   for (let op = 0; op < 30 * DOM_OPS_PER_NODE; op++) Math.sqrt(op);
   // build a nested object tree
-  const card = { tag: 'div', props: { className: 'product-card' }, children: [] };
-  const header = { tag: 'div', props: { className: 'card-header' }, children: [] };
-  const body = { tag: 'div', props: { className: 'card-body' }, children: [] };
+  const card = { tag: "div", props: { className: "product-card" }, children: [] };
+  const header = { tag: "div", props: { className: "card-header" }, children: [] };
+  const body = { tag: "div", props: { className: "card-body" }, children: [] };
   card.children.push(header, body);
   header.children.push(
-    { tag: 'h2', props: {}, children: [title] },
-    { tag: 'span', props: { className: 'badge' }, children: ['New'] }
+    { tag: "h2", props: {}, children: [title] },
+    { tag: "span", props: { className: "badge" }, children: ["New"] },
   );
-  const img = { tag: 'img', props: { src: imageUrl, alt: 'Product image' }, children: [] };
-  const desc = { tag: 'p', props: { className: 'description' }, children: [description] };
-  const specsList = { tag: 'ul', props: { className: 'specs' }, children: [] };
-  for (const s of specs) specsList.children.push({ tag: 'li', props: {}, children: [s] });
+  const img = { tag: "img", props: { src: imageUrl, alt: "Product image" }, children: [] };
+  const desc = { tag: "p", props: { className: "description" }, children: [description] };
+  const specsList = { tag: "ul", props: { className: "specs" }, children: [] };
+  for (const s of specs) specsList.children.push({ tag: "li", props: {}, children: [s] });
   body.children.push(img, desc, specsList);
   return card;
 }
@@ -141,15 +141,20 @@ async function runBenchCase(size, iters, repeats) {
     //     }
     // },
     {
-        name: 'Solid',
-        makeUpdateFn: () => {
-            const [s, setS] = createSignal(base);
-            const c = mapArray(s, id => {
-                return createComponent(generateDataForId(id));
-            });
-            c(); let idx = 0;
-            return () => { setS(sequences[idx]); c(); idx++; };
-        }
+      name: "Solid",
+      makeUpdateFn: () => {
+        const [s, setS] = createSignal(base);
+        const c = mapArray(s, (id) => {
+          return createComponent(generateDataForId(id));
+        });
+        c();
+        let idx = 0;
+        return () => {
+          setS(sequences[idx]);
+          c();
+          idx++;
+        };
+      },
     },
   ];
 
@@ -160,13 +165,17 @@ async function runBenchCase(size, iters, repeats) {
       const res = await measureTime(`${fw.name} N=${size}`, updateFn, iters);
       results.push(res);
     }
-    const times = results.map(r => r.time);
-    const mems = results.map(r => r.mem);
+    const times = results.map((r) => r.time);
+    const mems = results.map((r) => r.mem);
     const meanTime = times.reduce((a, b) => a + b, 0) / times.length;
-    const stdTime = Math.sqrt(times.reduce((sum, t) => sum + (t - meanTime) ** 2, 0) / times.length);
+    const stdTime = Math.sqrt(
+      times.reduce((sum, t) => sum + (t - meanTime) ** 2, 0) / times.length,
+    );
     const meanMem = mems.reduce((a, b) => a + b, 0) / mems.length;
     const stdMem = Math.sqrt(mems.reduce((sum, m) => sum + (m - meanMem) ** 2, 0) / mems.length);
-    console.log(`${fw.name} N=${size} over ${repeats} runs: time mean=${meanTime.toFixed(2)}ms std=${stdTime.toFixed(2)}ms | mem mean=${formatBytes(meanMem)} std=${formatBytes(stdMem)}\n`);
+    console.log(
+      `${fw.name} N=${size} over ${repeats} runs: time mean=${meanTime.toFixed(2)}ms std=${stdTime.toFixed(2)}ms | mem mean=${formatBytes(meanMem)} std=${formatBytes(stdMem)}\n`,
+    );
   }
 }
 
@@ -175,7 +184,9 @@ async function runBenchCase(size, iters, repeats) {
   const sizes = [10, 30, 100, 300, 500, 1000];
   const iters = 1000;
   const repeats = 5;
-  console.log(`Starting heavy benchmarks: sizes=${sizes.join(", ")}, iters=${iters}, repeats=${repeats}\n`);
+  console.log(
+    `Starting heavy benchmarks: sizes=${sizes.join(", ")}, iters=${iters}, repeats=${repeats}\n`,
+  );
   for (const size of sizes) {
     console.log(`=== HEAVY BENCHMARK SIZE: N=${size} ===`);
     await runBenchCase(size, iters, repeats);

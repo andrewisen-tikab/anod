@@ -36,7 +36,9 @@ describe("forEach context", () => {
     const l = list([1, 2]);
     let cleaned = 0;
     l.forEach((val, idx, arr, c) => {
-      c.cleanup(() => { cleaned++; });
+      c.cleanup(() => {
+        cleaned++;
+      });
     });
     expect(cleaned).toBe(0);
 

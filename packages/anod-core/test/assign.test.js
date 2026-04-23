@@ -1,7 +1,10 @@
 import { describe, test, expect } from "#test-runner";
 import { signal, root } from "#anod";
 
-let c; root((_c) => { c = _c; });
+let c;
+root((_c) => {
+  c = _c;
+});
 
 describe("Signal.set and Signal.post", () => {
   describe("updater callback deferral", () => {
@@ -62,7 +65,9 @@ describe("Signal.set and Signal.post", () => {
     test("post batches multiple writes into one flush", async () => {
       const s1 = signal(0);
       let runs = 0;
-      c.effect(s1, () => { runs++; });
+      c.effect(s1, () => {
+        runs++;
+      });
       runs = 0;
 
       s1.post(1);
@@ -118,7 +123,9 @@ describe("Signal.set and Signal.post", () => {
     test("post skips when value unchanged and not already posting", async () => {
       const s1 = signal(5);
       let runs = 0;
-      c.effect(s1, () => { runs++; });
+      c.effect(s1, () => {
+        runs++;
+      });
       runs = 0;
 
       s1.post(5);

@@ -1,14 +1,19 @@
 import { describe, test, expect } from "#test-runner";
 import { signal, root } from "#anod";
 
-let c; root((_c) => { c = _c; });
+let c;
+root((_c) => {
+  c = _c;
+});
 
 describe("signal.notify()", () => {
   test("notifies subscribers without changing the value", () => {
     const obj = { x: 1 };
     const s = signal(obj);
     let runs = 0;
-    c.effect(s, () => { runs++; });
+    c.effect(s, () => {
+      runs++;
+    });
     expect(runs).toBe(1);
 
     /** Mutate in place, then notify. */
@@ -48,7 +53,9 @@ describe("signal.notify()", () => {
       return { value: cx.val(s1) };
     });
     let runs = 0;
-    c.effect(c1, () => { runs++; });
+    c.effect(c1, () => {
+      runs++;
+    });
     expect(runs).toBe(1);
 
     /** Notify manually — downstream re-evaluates. */

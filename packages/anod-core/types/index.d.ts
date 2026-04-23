@@ -89,18 +89,14 @@ export interface Reader {
 export interface AsyncContext {
   suspend<T>(promise: Promise<T>): Promise<T>;
   suspend<T>(task: Task<T>): T | Promise<T>;
-  suspend<T>(
-    task: Task<T>,
-    onResolve: (value: T) => void,
-    onReject?: (error: any) => void
-  ): void;
+  suspend<T>(task: Task<T>, onResolve: (value: T) => void, onReject?: (error: any) => void): void;
   suspend<T extends readonly Task<any>[]>(
-    tasks: [...T]
+    tasks: [...T],
   ): Promise<{ [K in keyof T]: T[K] extends Task<infer U> ? U : never }>;
   suspend<T extends readonly Task<any>[]>(
     tasks: [...T],
     onResolve: (values: { [K in keyof T]: T[K] extends Task<infer U> ? U : never }) => void,
-    onReject?: (error: any) => void
+    onReject?: (error: any) => void,
   ): void;
   controller(): AbortController;
   pending(tasks: Task<any> | Task<any>[]): boolean;
@@ -150,88 +146,65 @@ export interface SpawnReader extends SpawnContext, Reader {}
 export interface Factory {
   // Unbound compute
   compute<U>(fn: (c: ComputeReader) => U): Compute<Resolve<U>>;
-  compute<U>(
-    fn: (c: ComputeReader, prev: Resolve<U>) => U,
-    seed: Resolve<U>
-  ): Compute<Resolve<U>>;
+  compute<U>(fn: (c: ComputeReader, prev: Resolve<U>) => U, seed: Resolve<U>): Compute<Resolve<U>>;
   compute<U, W>(
     fn: (c: ComputeReader, prev: Resolve<U>, args: W) => U,
     seed: Resolve<U>,
     opts?: number,
-    args?: W
+    args?: W,
   ): Compute<Resolve<U>>;
   compute<U, W>(
     fn: (c: ComputeReader, prev: Resolve<U> | undefined, args: W) => U,
     seed?: Resolve<U>,
     opts?: number,
-    args?: W
+    args?: W,
   ): Compute<Resolve<U>>;
   // Bound compute
-  compute<T, U>(
-    dep: Sender<T>,
-    fn: (val: T, c: ComputeContext) => U
-  ): Compute<Resolve<U>>;
+  compute<T, U>(dep: Sender<T>, fn: (val: T, c: ComputeContext) => U): Compute<Resolve<U>>;
   compute<T, U>(
     dep: Sender<T>,
     fn: (val: T, c: ComputeContext, prev: Resolve<U>) => U,
-    seed: Resolve<U>
+    seed: Resolve<U>,
   ): Compute<Resolve<U>>;
   compute<T, U, W>(
     dep: Sender<T>,
     fn: (val: T, c: ComputeContext, prev: Resolve<U>, args: W) => U,
     seed: Resolve<U>,
     opts?: number,
-    args?: W
+    args?: W,
   ): Compute<Resolve<U>>;
 
   // Unbound task
   task<U>(
     fn: (c: TaskReader, prev: Resolve<U>) => Promise<U>,
     seed?: Resolve<U>,
-    opts?: number
+    opts?: number,
   ): Task<Resolve<U>>;
   task<U, W>(
     fn: (c: TaskReader, prev: Resolve<U>, args: W) => Promise<U>,
     seed?: Resolve<U>,
     opts?: number,
-    args?: W
+    args?: W,
   ): Task<Resolve<U>>;
   // Bound task
   task<T, U>(
     dep: Sender<T>,
     fn: (val: T, c: TaskContext, prev: Resolve<U>) => Promise<U>,
     seed?: Resolve<U>,
-    opts?: number
+    opts?: number,
   ): Task<Resolve<U>>;
 
   // Unbound effect
   effect(fn: (c: EffectReader) => void, opts?: number): Effect;
-  effect<W>(
-    fn: (c: EffectReader, args: W) => void,
-    opts?: number,
-    args?: W
-  ): Effect;
+  effect<W>(fn: (c: EffectReader, args: W) => void, opts?: number, args?: W): Effect;
   // Bound effect
-  effect<T>(
-    dep: Sender<T>,
-    fn: (val: T, c: EffectContext) => void,
-    opts?: number
-  ): Effect;
+  effect<T>(dep: Sender<T>, fn: (val: T, c: EffectContext) => void, opts?: number): Effect;
 
   // Unbound spawn
   spawn(fn: (c: SpawnReader) => Promise<void>, opts?: number): Spawn;
-  spawn<W>(
-    fn: (c: SpawnReader, args: W) => Promise<void>,
-    opts?: number,
-    args?: W
-  ): Spawn;
+  spawn<W>(fn: (c: SpawnReader, args: W) => Promise<void>, opts?: number, args?: W): Spawn;
   // Bound spawn
-  spawn<T>(
-    dep: Sender<T>,
-    fn: (val: T, c: SpawnContext) => Promise<void>,
-    opts?: number
-  ): Spawn;
-
+  spawn<T>(dep: Sender<T>, fn: (val: T, c: SpawnContext) => Promise<void>, opts?: number): Spawn;
 }
 
 // ─── Top-level API ────────────────────────────────────────────────────

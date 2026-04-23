@@ -1,7 +1,10 @@
 import { describe, test, expect } from "#test-runner";
 import { signal, root } from "#anod";
 
-let c; root((_c) => { c = _c; });
+let c;
+root((_c) => {
+  c = _c;
+});
 
 const tick = () => Promise.resolve();
 const settle = () => tick().then(tick).then(tick).then(tick).then(tick);
@@ -22,13 +25,21 @@ describe("suspend([tasks]) consistency", () => {
     const taskA = c.task(async (cx) => {
       let u = cx.val(url);
       let t = cx.val(trigger);
-      await cx.suspend(new Promise((r) => { resolveA = r; }));
+      await cx.suspend(
+        new Promise((r) => {
+          resolveA = r;
+        }),
+      );
       return "A:" + u + ":" + t;
     });
 
     const taskB = c.task(async (cx) => {
       let u = cx.val(url);
-      await cx.suspend(new Promise((r) => { resolveB = r; }));
+      await cx.suspend(
+        new Promise((r) => {
+          resolveB = r;
+        }),
+      );
       return "B:" + u;
     });
     await settle();
@@ -76,15 +87,27 @@ describe("suspend([tasks]) consistency", () => {
 
     const taskA = c.task(async (cx) => {
       let v = cx.val(s);
-      await cx.suspend(new Promise((r) => { resolveA = r; }));
+      await cx.suspend(
+        new Promise((r) => {
+          resolveA = r;
+        }),
+      );
       return "A" + v;
     });
     const taskB = c.task(async (cx) => {
-      await cx.suspend(new Promise((r) => { resolveB = r; }));
+      await cx.suspend(
+        new Promise((r) => {
+          resolveB = r;
+        }),
+      );
       return "B";
     });
     const taskC = c.task(async (cx) => {
-      await cx.suspend(new Promise((r) => { resolveC = r; }));
+      await cx.suspend(
+        new Promise((r) => {
+          resolveC = r;
+        }),
+      );
       return "C";
     });
     await settle();

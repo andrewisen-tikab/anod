@@ -1,8 +1,8 @@
-export { describe, test, expect } from 'bun:test';
+export { describe, test, expect } from "bun:test";
 
 /** Forces a full stop-the-world GC via Bun's native API. */
 export function forceGC() {
-    Bun.gc(true);
+  Bun.gc(true);
 }
 
 /**
@@ -10,10 +10,10 @@ export function forceGC() {
  * @param {() => void} callback
  */
 export function collect(callback) {
-    setTimeout(() => {
-        forceGC();
-        callback();
-    }, 10);
+  setTimeout(() => {
+    forceGC();
+    callback();
+  }, 10);
 }
 
 /**
@@ -22,8 +22,8 @@ export function collect(callback) {
  * targets are finalized before asserting.
  */
 export async function collectAsync() {
-    await new Promise((resolve) => collect(() => resolve()));
-    await new Promise((resolve) => collect(() => resolve()));
+  await new Promise((resolve) => collect(() => resolve()));
+  await new Promise((resolve) => collect(() => resolve()));
 }
 
 /**
@@ -33,12 +33,12 @@ export async function collectAsync() {
  * @param {WeakRef[]} refs
  */
 export async function expectCollected(refs) {
-    await collectAsync();
-    for (let i = 0; i < 10; i++) {
-        if (refs.every((ref) => ref.deref() === undefined)) {
-            return;
-        }
-        await new Promise((r) => setTimeout(r, 1));
-        forceGC();
+  await collectAsync();
+  for (let i = 0; i < 10; i++) {
+    if (refs.every((ref) => ref.deref() === undefined)) {
+      return;
     }
+    await new Promise((r) => setTimeout(r, 1));
+    forceGC();
+  }
 }
