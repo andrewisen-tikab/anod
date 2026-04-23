@@ -1,16 +1,22 @@
 {
   "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
     "composite": true,
-    /* Target ES2015 to support Map and Typed Arrays */
-    "target": "ES2020",
-    "lib": ["ES2020", "DOM"],
     "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "./dist",
     "module": "NodeNext",
-    "moduleResolution": "NodeNext"
+    "moduleResolution": "NodeNext",
+    "paths": {
+      "anod-core": ["../anod-core/src/index.ts"],
+      "anod-core/internal": ["../anod-core/src/internal.ts"],
+      "anod-core/internal-types": ["../anod-core/src/types.ts"]
+    }
   },
-  "include": [
-    "src/**.js",
-    "tests/*.js",
-    "types/*.d.ts"
-  ]
+  "references": [{ "path": "../anod-core" }],
+  "include": ["src/**/*.ts"],
+  "exclude": ["types/**", "test/**"]
 }

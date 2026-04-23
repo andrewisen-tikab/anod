@@ -147,9 +147,18 @@ async function main() {
   // ── 3. Multiple tasks with pending pattern ───────────────────────────────
   await runTest("pending: multiple tasks, one signal", async () => {
     const s1 = c.signal(0);
-    const taskA = c.task((cx) => { cx.val(s1); return cx.suspend(neverResolve()); });
-    const taskB = c.task((cx) => { cx.val(s1); return cx.suspend(neverResolve()); });
-    const taskC = c.task((cx) => { cx.val(s1); return cx.suspend(neverResolve()); });
+    const taskA = c.task((cx) => {
+      cx.val(s1);
+      return cx.suspend(neverResolve());
+    });
+    const taskB = c.task((cx) => {
+      cx.val(s1);
+      return cx.suspend(neverResolve());
+    });
+    const taskC = c.task((cx) => {
+      cx.val(s1);
+      return cx.suspend(neverResolve());
+    });
 
     let effectRuns = 0;
     c.effect((cx) => {

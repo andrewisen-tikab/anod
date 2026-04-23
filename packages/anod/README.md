@@ -16,34 +16,34 @@ import { root, signal, list, batch } from "anod";
 const getData = async (url) => ({ url, items: ["First", "Second", "Third"] });
 
 const app = root((c) => {
-	const query = signal("");
-	const filters = list(["js", "ts"]);
-	const langs = filters.join(",");
+  const query = signal("");
+  const filters = list(["js", "ts"]);
+  const langs = filters.join(",");
 
-	// Derived compute re-evaluates when query or langs change
-	const params = c.compute((c) => `?q=${c.val(query)}&lang=${c.val(langs)}`);
+  // Derived compute re-evaluates when query or langs change
+  const params = c.compute((c) => `?q=${c.val(query)}&lang=${c.val(langs)}`);
 
-	// Async task re-fetches whenever params update
-	// Every reactive primitive take a short-hand signature for single dep
-	const results = c.task(params, async (param, c) => {
-		return await c.suspend(getData(`/api/search${param}`));
-	});
+  // Async task re-fetches whenever params update
+  // Every reactive primitive take a short-hand signature for single dep
+  const results = c.task(params, async (param, c) => {
+    return await c.suspend(getData(`/api/search${param}`));
+  });
 
-	// spawn is an async effect, it awaits the task, suspends while task is loading.
-	// When the task updates, it notifies the spawn
-	c.spawn(async (c) => {
-		c.cleanup(() => console.log("cleaning up"));
-		const data = await c.suspend(results);
-		console.log(data.url);
-		for (const item of data.items) {
-			console.log(`Received: ${item}`);
-		}
-	});
+  // spawn is an async effect, it awaits the task, suspends while task is loading.
+  // When the task updates, it notifies the spawn
+  c.spawn(async (c) => {
+    c.cleanup(() => console.log("cleaning up"));
+    const data = await c.suspend(results);
+    console.log(data.url);
+    for (const item of data.items) {
+      console.log(`Received: ${item}`);
+    }
+  });
 
-	batch(() => {
-		query.set("anod");
-		filters.push("rust");
-	});
+  batch(() => {
+    query.set("anod");
+    filters.push("rust");
+  });
 });
 // Clean up and dispose everything inside
 setTimeout(() => app.dispose(), 100);
@@ -76,7 +76,7 @@ The foundation is the root. It creates a top level reactive ownership space.
 import { root, type RootContext } from "anod";
 
 const app = root((c: RootContext) => {
-	// Add other reactive primitives here
+  // Add other reactive primitives here
 });
 // Later when you're done with the root
 app.dispose();
@@ -90,38 +90,38 @@ A signal stores a value and notifies subscribers when changed. You can read it t
 import { signal, root } from "anod";
 
 root((c) => {
-	const name = signal("Vilhelm");
-	const shape = relay({ job: "dev", hobby: "fidology" });
-	/**
-	 * The .get() method only returns the current value.
-	 * Unlike other libraries, this method by itself does
-	 * not have any reactive capabilities. Instead, reactivity
-	 * is controller through the context
-	 */
-	console.log(name.get());
-	c.effect((c) => {
-		/**
-		 * To read and subscribe to a signal,
-		 * we use the `c.val()` function provided
-		 * by the current reactive context.
-		 */
-		console.log(c.val(name), c.val(shape));
-	});
-	/**
-	 * Prints 'Leif' to console.
-	 * The .set() method is immediate, it
-	 * flushes the internal queue synchronously.
-	 */
-	name.set("Leif");
+  const name = signal("Vilhelm");
+  const shape = relay({ job: "dev", hobby: "fidology" });
+  /**
+   * The .get() method only returns the current value.
+   * Unlike other libraries, this method by itself does
+   * not have any reactive capabilities. Instead, reactivity
+   * is controller through the context
+   */
+  console.log(name.get());
+  c.effect((c) => {
+    /**
+     * To read and subscribe to a signal,
+     * we use the `c.val()` function provided
+     * by the current reactive context.
+     */
+    console.log(c.val(name), c.val(shape));
+  });
+  /**
+   * Prints 'Leif' to console.
+   * The .set() method is immediate, it
+   * flushes the internal queue synchronously.
+   */
+  name.set("Leif");
 
-	/**
-	 * A relay is useful for mutable dispatch.
-	 * If we change its values to the same object, 
-		* it notifies the effect
-	 */
-	const currentShape = shape.get();
-	currentShape.job = 'self-employed';
-	shape.set(currentShape); // Notifies effect
+  /**
+   * A relay is useful for mutable dispatch.
+   * If we change its values to the same object,
+   * it notifies the effect
+   */
+  const currentShape = shape.get();
+  currentShape.job = "self-employed";
+  shape.set(currentShape); // Notifies effect
 });
 ```
 
@@ -132,30 +132,30 @@ A compute is a derived signal. It can subscribe to signals or other computes, an
 ```ts
 import { signal, root } from "anod";
 root((c) => {
-	const temp = signal(10);
-	/**
-	 * Computes are eager when created and run immediately.
-	 * After they have produced an initial value, they update only if they are read.
-	 * Below, it immediately prints to console.
-	 */
-	const feelsCold = c.compute((c) => {
-		console.log("Evaluating weather");
-		return c.val(temp) < 0; // Warm weather today
-	});
+  const temp = signal(10);
+  /**
+   * Computes are eager when created and run immediately.
+   * After they have produced an initial value, they update only if they are read.
+   * Below, it immediately prints to console.
+   */
+  const feelsCold = c.compute((c) => {
+    console.log("Evaluating weather");
+    return c.val(temp) < 0; // Warm weather today
+  });
 
-	temp.set(15); // feelsCold has no subscribers, nothing prints to the console
+  temp.set(15); // feelsCold has no subscribers, nothing prints to the console
 
-	c.effect((c) => {
-		/**
-		 * Here, feelsCold is out of date. When we try to get its value,
-		 * it re-runs to get the latest value.
-		 * The console prints 'Evaluating weather' before
-		 * assessing whether it's cold today.
-		 */
-		console.log(c.val(feelsCold) ? "Feels cold" : "Not too bad");
-	});
-	temp.set(5); // Evaluating, but it's still warm, effect is not notified
-	temp.set(-10); // Now we went from warm to cold, effect prints 'Feels cold'
+  c.effect((c) => {
+    /**
+     * Here, feelsCold is out of date. When we try to get its value,
+     * it re-runs to get the latest value.
+     * The console prints 'Evaluating weather' before
+     * assessing whether it's cold today.
+     */
+    console.log(c.val(feelsCold) ? "Feels cold" : "Not too bad");
+  });
+  temp.set(5); // Evaluating, but it's still warm, effect is not notified
+  temp.set(-10); // Now we went from warm to cold, effect prints 'Feels cold'
 });
 ```
 
@@ -164,9 +164,9 @@ All reactive receivers also accept a single dependency signature, `compute(dep: 
 ```ts
 import { root, signal } from "anod";
 root((c) => {
-	const name = signal("Vilhelm");
-	const isSelf = c.compute(name, (val) => val === "Vilhelm");
-	c.effect(isSelf, (self) => console.log(`Is it me? ${self}`));
+  const name = signal("Vilhelm");
+  const isSelf = c.compute(name, (val) => val === "Vilhelm");
+  c.effect(isSelf, (self) => console.log(`Is it me? ${self}`));
 });
 ```
 
@@ -177,18 +177,18 @@ An effect is a receiver that listens to senders and performs actions.
 ```ts
 import { root, signal } from "anod";
 root((c) => {
-	const counter = signal(0);
-	c.effect(counter, (val) => {
-		console.log(`Val is ${val}`);
-	});
-	/**
-	 * Signals drain synchronously.
-	 * This will print 10 times to console,
-	 * once for each counter.
-	 */
-	for (let i = 0; i < 10; i++) {
-		counter.set(counter.get() + 1);
-	}
+  const counter = signal(0);
+  c.effect(counter, (val) => {
+    console.log(`Val is ${val}`);
+  });
+  /**
+   * Signals drain synchronously.
+   * This will print 10 times to console,
+   * once for each counter.
+   */
+  for (let i = 0; i < 10; i++) {
+    counter.set(counter.get() + 1);
+  }
 });
 ```
 
@@ -197,22 +197,22 @@ Effects can be nested, each effect managing ownership of any effect node created
 ```ts
 import { root, signal } from "anod";
 root((c) => {
-	const allow = signal(false);
-	const message = signal("hello");
-	c.effect(allow, (allowed, c) => {
-		if (allowed) {
-			c.cleanup(() => {
-				console.log("disposing logger");
-			});
-			c.effect(message, (mess) => {
-				console.log(mess);
-			});
-		}
-	});
-	allow.set(true); // inner effect created, prints "hello"
-	message.set("world"); // inner effect re-runs, prints "world"
-	allow.set(false); // prints "disposing logger", inner effect disposed
-	message.set("ignored"); // nothing happens, no inner effect exists
+  const allow = signal(false);
+  const message = signal("hello");
+  c.effect(allow, (allowed, c) => {
+    if (allowed) {
+      c.cleanup(() => {
+        console.log("disposing logger");
+      });
+      c.effect(message, (mess) => {
+        console.log(mess);
+      });
+    }
+  });
+  allow.set(true); // inner effect created, prints "hello"
+  message.set("world"); // inner effect re-runs, prints "world"
+  allow.set(false); // prints "disposing logger", inner effect disposed
+  message.set("ignored"); // nothing happens, no inner effect exists
 });
 ```
 
@@ -227,35 +227,35 @@ A Task is an async Compute. Just like compute, it runs eagerly, but after it has
 ```ts
 import { root, signal } from "anod";
 root((c) => {
-	const userId = signal(1);
-	/**
-	 * A task returns a promise. While loading,
-	 * .get() returns the previous value (or undefined on first run).
-	 * When it resolves, subscribers are notified.
-	 */
-	const user = c.task(userId, async (id, c) => {
-		const res = await c.suspend(fetch(`/api/users/${id}`));
-		return res.json();
-	});
+  const userId = signal(1);
+  /**
+   * A task returns a promise. While loading,
+   * .get() returns the previous value (or undefined on first run).
+   * When it resolves, subscribers are notified.
+   */
+  const user = c.task(userId, async (id, c) => {
+    const res = await c.suspend(fetch(`/api/users/${id}`));
+    return res.json();
+  });
 
-	/**
-	 * Spawns await tasks through c.suspend().
-	 * While the task is loading, the spawn suspends.
-	 * When the task settles, the spawn resumes.
-	 */
-	c.spawn(async (c) => {
-		const data = await c.suspend(user);
-		console.log(data.name);
-	});
+  /**
+   * Spawns await tasks through c.suspend().
+   * While the task is loading, the spawn suspends.
+   * When the task settles, the spawn resumes.
+   */
+  c.spawn(async (c) => {
+    const data = await c.suspend(user);
+    console.log(data.name);
+  });
 
-	/**
-	 * Changing userId triggers the task to re-fetch.
-	 * The old promise is discarded if still pending.
-	 * When the new result arrives, the spawn re-runs.
-	 * Nothing happens in the spawn. If the task invalidates while spawn is waiting,
-	 * it just keeps waiting for the task to produce value.
-	 */
-	userId.set(2);
+  /**
+   * Changing userId triggers the task to re-fetch.
+   * The old promise is discarded if still pending.
+   * When the new result arrives, the spawn re-runs.
+   * Nothing happens in the spawn. If the task invalidates while spawn is waiting,
+   * it just keeps waiting for the task to produce value.
+   */
+  userId.set(2);
 });
 ```
 
@@ -266,21 +266,21 @@ A Spawn is an async Effect. It runs eagerly, re-runs when dependencies change, a
 ```ts
 import { root, signal } from "anod";
 root((c) => {
-	const url = signal("/api/data");
-	c.spawn(async (c) => {
-		const endpoint = c.val(url);
-		c.cleanup(() => console.log("previous run cleaned up"));
-		const res = await c.suspend(fetch(endpoint));
-		const data = await c.suspend(res.json());
-		console.log(data);
-	});
-	/**
-	 * The first spawn is mid-flight, waiting for fetch.
-	 * Setting url causes the spawn to re-run. The old
-	 * fetch promise is abandoned: c.suspend() detects that
-	 * the activation is stale and silently drops the continuation.
-	 */
-	url.set("/api/other");
+  const url = signal("/api/data");
+  c.spawn(async (c) => {
+    const endpoint = c.val(url);
+    c.cleanup(() => console.log("previous run cleaned up"));
+    const res = await c.suspend(fetch(endpoint));
+    const data = await c.suspend(res.json());
+    console.log(data);
+  });
+  /**
+   * The first spawn is mid-flight, waiting for fetch.
+   * Setting url causes the spawn to re-run. The old
+   * fetch promise is abandoned: c.suspend() detects that
+   * the activation is stale and silently drops the continuation.
+   */
+  url.set("/api/other");
 });
 ```
 
@@ -291,21 +291,21 @@ The suspend method is a critical part of anod's async infrastructure. It acts as
 ```ts
 import { root, signal } from "anod";
 root((c) => {
-	const url = signal("/api/data");
-	c.spawn(async (c) => {
-		const endpoint = c.val(url);
-		c.cleanup(() => console.log("previous run cleaned up"));
-		const res = await c.suspend(fetch(endpoint));
-		const data = await c.suspend(res.json());
-		console.log(data);
-	});
-	/**
-	 * The first spawn is mid-flight, waiting for fetch.
-	 * Setting url causes the spawn to re-run. The old
-	 * fetch promise is abandoned: c.suspend() detects that
-	 * the activation is stale and silently drops the continuation.
-	 */
-	url.set("/api/other");
+  const url = signal("/api/data");
+  c.spawn(async (c) => {
+    const endpoint = c.val(url);
+    c.cleanup(() => console.log("previous run cleaned up"));
+    const res = await c.suspend(fetch(endpoint));
+    const data = await c.suspend(res.json());
+    console.log(data);
+  });
+  /**
+   * The first spawn is mid-flight, waiting for fetch.
+   * Setting url causes the spawn to re-run. The old
+   * fetch promise is abandoned: c.suspend() detects that
+   * the activation is stale and silently drops the continuation.
+   */
+  url.set("/api/other");
 });
 ```
 
@@ -322,27 +322,27 @@ Effects and spawns support `c.recover()` to intercept errors. The handler receiv
 ```ts
 import { root, signal, REFUSE, PANIC, FATAL } from "anod";
 root((c) => {
-	// Root-level handler: only log truly unexpected crashes
-	c.recover((err) => {
-		if (err.type === FATAL) {
-			console.error("Bug detected:", err.error);
-		}
-		return true;
-	});
+  // Root-level handler: only log truly unexpected crashes
+  c.recover((err) => {
+    if (err.type === FATAL) {
+      console.error("Bug detected:", err.error);
+    }
+    return true;
+  });
 
-	const url = signal("/api/data");
-	c.spawn(async (c) => {
-		c.recover((err) => {
-			if (err.type === FATAL) return false; // bubble FATAL to root
-			console.warn("Stale data, retrying on next change");
-			return true; // swallow, stay alive
-		});
-		const res = await c.suspend(fetch(c.val(url)));
-		if (!res.ok) {
-			c.panic("Server returned " + res.status);
-		}
-		console.log(await c.suspend(res.json()));
-	});
+  const url = signal("/api/data");
+  c.spawn(async (c) => {
+    c.recover((err) => {
+      if (err.type === FATAL) return false; // bubble FATAL to root
+      console.warn("Stale data, retrying on next change");
+      return true; // swallow, stay alive
+    });
+    const res = await c.suspend(fetch(c.val(url)));
+    if (!res.ok) {
+      c.panic("Server returned " + res.status);
+    }
+    console.log(await c.suspend(res.json()));
+  });
 });
 ```
 
@@ -353,19 +353,19 @@ root((c) => {
 ```ts
 import { root, signal, batch } from "anod";
 root((c) => {
-	const first = signal("Ada");
-	const last = signal("Lovelace");
-	c.effect((c) => {
-		console.log(`${c.val(first)} ${c.val(last)}`);
-	});
-	/**
-	 * Without batch: two separate flushes, effect runs twice.
-	 * With batch: one flush, effect runs once with both values updated.
-	 */
-	batch(() => {
-		first.set("Grace");
-		last.set("Hopper");
-	});
+  const first = signal("Ada");
+  const last = signal("Lovelace");
+  c.effect((c) => {
+    console.log(`${c.val(first)} ${c.val(last)}`);
+  });
+  /**
+   * Without batch: two separate flushes, effect runs twice.
+   * With batch: one flush, effect runs once with both values updated.
+   */
+  batch(() => {
+    first.set("Grace");
+    last.set("Hopper");
+  });
 });
 ```
 
@@ -410,25 +410,25 @@ Marks the current node as stable: after this call, any further `c.val()` reads d
 ```ts
 import { root, signal } from "anod";
 root((c) => {
-	const config = signal("dark");
-	const data = signal([1, 2, 3]);
-	let runs = 0;
-	const formatted = c.compute((c) => {
-		runs++;
-		const d = c.val(data); // subscribes to data
-		c.stable();
-		const cfg = c.val(config); // reads config but does NOT subscribe
-		return `${cfg}: ${d.join(",")}`;
-	});
-	console.log(formatted.get()); // "dark: 1,2,3"
+  const config = signal("dark");
+  const data = signal([1, 2, 3]);
+  let runs = 0;
+  const formatted = c.compute((c) => {
+    runs++;
+    const d = c.val(data); // subscribes to data
+    c.stable();
+    const cfg = c.val(config); // reads config but does NOT subscribe
+    return `${cfg}: ${d.join(",")}`;
+  });
+  console.log(formatted.get()); // "dark: 1,2,3"
 
-	config.set("light");
-	console.log(formatted.get()); // still "dark: 1,2,3" — config is not a dep
-	console.log(runs); // 1 — did not re-evaluate
+  config.set("light");
+  console.log(formatted.get()); // still "dark: 1,2,3" — config is not a dep
+  console.log(runs); // 1 — did not re-evaluate
 
-	data.set([4, 5]);
-	console.log(formatted.get()); // "light: 4,5" — picks up config on re-run
-	console.log(runs); // 2
+  data.set([4, 5]);
+  console.log(formatted.get()); // "light: 4,5" — picks up config on re-run
+  console.log(runs); // 2
 });
 ```
 
@@ -444,30 +444,30 @@ This is powerful because you can do any kind of equality — deep comparison, st
 ```ts
 import { root, signal } from "anod";
 root((c) => {
-	const x = signal(5);
-	let runs = 0;
-	const clamped = c.compute(
-		x,
-		(val, c, prev) => {
-			let result = Math.min(val, 10);
-			c.equal(result === prev); // user performs the comparison
-			return result;
-		},
-		5
-	);
-	c.effect(clamped, () => {
-		runs++;
-	});
-	console.log(runs); // 1 — initial run
+  const x = signal(5);
+  let runs = 0;
+  const clamped = c.compute(
+    x,
+    (val, c, prev) => {
+      let result = Math.min(val, 10);
+      c.equal(result === prev); // user performs the comparison
+      return result;
+    },
+    5,
+  );
+  c.effect(clamped, () => {
+    runs++;
+  });
+  console.log(runs); // 1 — initial run
 
-	x.set(15); // clamped=10, different from 5 → effect runs
-	console.log(runs); // 2
+  x.set(15); // clamped=10, different from 5 → effect runs
+  console.log(runs); // 2
 
-	x.set(20); // clamped=10, same as before → suppressed
-	console.log(runs); // 2 — effect did NOT re-run
+  x.set(20); // clamped=10, same as before → suppressed
+  console.log(runs); // 2 — effect did NOT re-run
 
-	x.set(3); // clamped=3, different → effect runs
-	console.log(runs); // 3
+  x.set(3); // clamped=3, different → effect runs
+  console.log(runs); // 3
 });
 ```
 
@@ -478,19 +478,19 @@ A weak compute releases its cached value when it loses all subscribers. The next
 ```ts
 import { root, signal, OPT_WEAK } from "anod";
 root((c) => {
-	const raw = signal(100);
-	let runs = 0;
-	const processed = c.compute((c) => {
-		runs++;
-		c.weak();
-		return c.val(raw) * 2;
-	});
-	const e = c.effect(processed, (val) => {});
-	console.log(runs); // 1 — computed once
+  const raw = signal(100);
+  let runs = 0;
+  const processed = c.compute((c) => {
+    runs++;
+    c.weak();
+    return c.val(raw) * 2;
+  });
+  const e = c.effect(processed, (val) => {});
+  console.log(runs); // 1 — computed once
 
-	e.dispose();
-	console.log(processed.get()); // 200 — recomputed fresh
-	console.log(runs); // 2 — value was released, had to recompute
+  e.dispose();
+  console.log(processed.get()); // 200 — recomputed fresh
+  console.log(runs); // 2 — value was released, had to recompute
 });
 ```
 
@@ -523,42 +523,42 @@ This lets you build layered error handling: effects handle their own expected er
 ```ts
 import { root, signal, REFUSE, PANIC, FATAL } from "anod";
 root((c) => {
-	// Root: catch unexpected crashes, report to error tracker
-	c.recover((err) => {
-		if (err.type === FATAL) {
-			reportToSentry(err.error);
-		}
-		return true;
-	});
+  // Root: catch unexpected crashes, report to error tracker
+  c.recover((err) => {
+    if (err.type === FATAL) {
+      reportToSentry(err.error);
+    }
+    return true;
+  });
 
-	// Compute uses refuse() for validation — no throw, no crash
-	const price = signal(100);
-	const discount = c.compute(price, (val, c) => {
-		if (val <= 0) {
-			return c.refuse("Price must be positive");
-		}
-		return val * 0.9;
-	});
+  // Compute uses refuse() for validation — no throw, no crash
+  const price = signal(100);
+  const discount = c.compute(price, (val, c) => {
+    if (val <= 0) {
+      return c.refuse("Price must be positive");
+    }
+    return val * 0.9;
+  });
 
-	// Spawn uses panic() when data is stale — throws, but expected
-	const token = signal("abc123");
-	c.spawn(async (c) => {
-		c.recover((err) => {
-			if (err.type === PANIC) {
-				console.warn("Auth issue, will retry:", err.error);
-				return true; // stay alive, retry on next token change
-			}
-			return false; // bubble FATAL to root
-		});
-		let res = await c.suspend(
-			fetch("/api/me", {
-				headers: { Authorization: c.val(token) }
-			})
-		);
-		if (res.status === 401) {
-			c.panic("Token expired");
-		}
-	});
+  // Spawn uses panic() when data is stale — throws, but expected
+  const token = signal("abc123");
+  c.spawn(async (c) => {
+    c.recover((err) => {
+      if (err.type === PANIC) {
+        console.warn("Auth issue, will retry:", err.error);
+        return true; // stay alive, retry on next token change
+      }
+      return false; // bubble FATAL to root
+    });
+    let res = await c.suspend(
+      fetch("/api/me", {
+        headers: { Authorization: c.val(token) },
+      }),
+    );
+    if (res.status === 401) {
+      c.panic("Token expired");
+    }
+  });
 });
 ```
 
@@ -574,20 +574,19 @@ anod provides three ways to consume async values, each suited to a different use
 
 ```ts
 import { root, signal } from "anod";
-const fetchData = () =>
-	new Promise((r) => setTimeout(() => r({ name: "anod" }), 50));
+const fetchData = () => new Promise((r) => setTimeout(() => r({ name: "anod" }), 50));
 
 root((c) => {
-	const data = c.task(async (c) => {
-		return await c.suspend(fetchData());
-	});
-	c.effect((c) => {
-		if (c.pending(data)) {
-			console.log("Loading...");
-			return;
-		}
-		console.log("Ready:", c.val(data));
-	});
+  const data = c.task(async (c) => {
+    return await c.suspend(fetchData());
+  });
+  c.effect((c) => {
+    if (c.pending(data)) {
+      console.log("Loading...");
+      return;
+    }
+    console.log("Ready:", c.val(data));
+  });
 });
 // Prints "Loading..." then after 50ms "Ready: { name: 'anod' }"
 ```
@@ -603,14 +602,14 @@ import { root, signal } from "anod";
 const fetchData = (url) => new Promise((r) => setTimeout(() => r({ url }), 50));
 
 root((c) => {
-	const url = signal("/api/data");
-	c.spawn(async (c) => {
-		// If the spawn re-runs while fetchData is pending,
-		// the old promise's .then() never fires.
-		const res = await c.suspend(fetchData(c.val(url)));
-		console.log("Got:", res.url);
-	});
-	url.set("/api/other"); // old activation silently dropped
+  const url = signal("/api/data");
+  c.spawn(async (c) => {
+    // If the spawn re-runs while fetchData is pending,
+    // the old promise's .then() never fires.
+    const res = await c.suspend(fetchData(c.val(url)));
+    console.log("Got:", res.url);
+  });
+  url.set("/api/other"); // old activation silently dropped
 });
 ```
 
@@ -619,17 +618,17 @@ root((c) => {
 ```ts
 import { root, signal } from "anod";
 root((c) => {
-	const id = signal(1);
-	const fetchTask = c.task(id, async (id, c) => {
-		await c.suspend(new Promise((r) => setTimeout(r, 50)));
-		return { id, name: "user_" + id };
-	});
-	c.spawn(async (c) => {
-		// Suspends until fetchTask settles. If fetchTask re-runs,
-		// the spawn is notified and re-runs too.
-		const data = await c.suspend(fetchTask);
-		console.log(data.name);
-	});
+  const id = signal(1);
+  const fetchTask = c.task(id, async (id, c) => {
+    await c.suspend(new Promise((r) => setTimeout(r, 50)));
+    return { id, name: "user_" + id };
+  });
+  c.spawn(async (c) => {
+    // Suspends until fetchTask settles. If fetchTask re-runs,
+    // the spawn is notified and re-runs too.
+    const data = await c.suspend(fetchTask);
+    console.log(data.name);
+  });
 });
 ```
 
@@ -640,13 +639,13 @@ import { root } from "anod";
 const delay = (val, ms) => new Promise((r) => setTimeout(() => r(val), ms));
 
 root((c) => {
-	const usersTask = c.task(async (c) => await c.suspend(delay(["Alice"], 50)));
-	const postsTask = c.task(async (c) => await c.suspend(delay(["Hello"], 30)));
+  const usersTask = c.task(async (c) => await c.suspend(delay(["Alice"], 50)));
+  const postsTask = c.task(async (c) => await c.suspend(delay(["Hello"], 30)));
 
-	c.spawn(async (c) => {
-		const [users, posts] = await c.suspend([usersTask, postsTask]);
-		console.log(users, posts); // ["Alice"] ["Hello"]
-	});
+  c.spawn(async (c) => {
+    const [users, posts] = await c.suspend([usersTask, postsTask]);
+    console.log(users, posts); // ["Alice"] ["Hello"]
+  });
 });
 ```
 
@@ -659,22 +658,22 @@ The callbacks are guarded with the same staleness protection as promises: if the
 ```ts
 import { root, signal } from "anod";
 root((c) => {
-	const url = signal("ws://localhost");
-	const messageSignal = signal(null);
-	c.spawn((c) => {
-		const ws = new WebSocket(c.val(url));
-		c.cleanup(() => ws.close());
+  const url = signal("ws://localhost");
+  const messageSignal = signal(null);
+  c.spawn((c) => {
+    const ws = new WebSocket(c.val(url));
+    c.cleanup(() => ws.close());
 
-		c.suspend((resolve, reject) => {
-			ws.addEventListener("open", () => {
-				ws.addEventListener("message", (e) => {
-					messageSignal.set(JSON.parse(e.data));
-				});
-				resolve();
-			});
-			ws.addEventListener("error", reject);
-		});
-	});
+    c.suspend((resolve, reject) => {
+      ws.addEventListener("open", () => {
+        ws.addEventListener("message", (e) => {
+          messageSignal.set(JSON.parse(e.data));
+        });
+        resolve();
+      });
+      ws.addEventListener("error", reject);
+    });
+  });
 });
 ```
 
@@ -694,22 +693,21 @@ This applies to both resolve and reject: if a promise rejects after the node was
 
 ```ts
 import { root, signal } from "anod";
-const fetchWithAuth = (token) =>
-	new Promise((r) => setTimeout(() => r({ token, data: "ok" }), 50));
+const fetchWithAuth = (token) => new Promise((r) => setTimeout(() => r({ token, data: "ok" }), 50));
 
 root((c) => {
-	const authToken = signal("token_abc");
-	const data = c.task(async (c) => {
-		const token = c.defer(authToken); // read but don't subscribe yet
-		const res = await c.suspend(fetchWithAuth(token));
-		// At settle time, authToken is subscribed.
-		// If it changed during the fetch, the task re-runs.
-		return res;
-	});
-	c.spawn(async (c) => {
-		const result = await c.suspend(data);
-		console.log(result); // { token: "token_abc", data: "ok" }
-	});
+  const authToken = signal("token_abc");
+  const data = c.task(async (c) => {
+    const token = c.defer(authToken); // read but don't subscribe yet
+    const res = await c.suspend(fetchWithAuth(token));
+    // At settle time, authToken is subscribed.
+    // If it changed during the fetch, the task re-runs.
+    return res;
+  });
+  c.spawn(async (c) => {
+    const result = await c.suspend(data);
+    console.log(result); // { token: "token_abc", data: "ok" }
+  });
 });
 ```
 
@@ -720,21 +718,21 @@ root((c) => {
 ```ts
 import { root, signal } from "anod";
 root((c) => {
-	const url = signal("/api/data");
-	c.spawn(async (c) => {
-		const endpoint = c.val(url);
-		const ctrl = c.controller();
-		try {
-			const res = await c.suspend(fetch(endpoint, { signal: ctrl.signal }));
-			console.log(await c.suspend(res.json()));
-		} catch (e) {
-			if (e.name === "AbortError") {
-				console.log("Request aborted");
-			}
-		}
-	});
-	// Changing url re-runs the spawn, which aborts the old fetch
-	url.set("/api/other");
+  const url = signal("/api/data");
+  c.spawn(async (c) => {
+    const endpoint = c.val(url);
+    const ctrl = c.controller();
+    try {
+      const res = await c.suspend(fetch(endpoint, { signal: ctrl.signal }));
+      console.log(await c.suspend(res.json()));
+    } catch (e) {
+      if (e.name === "AbortError") {
+        console.log("Request aborted");
+      }
+    }
+  });
+  // Changing url re-runs the spawn, which aborts the old fetch
+  url.set("/api/other");
 });
 ```
 
@@ -747,28 +745,28 @@ By default, when a task or spawn's dependencies change during async work, the no
 ```ts
 import { root, signal } from "anod";
 const saveToDb = (item) =>
-	new Promise((r) =>
-		setTimeout(() => {
-			console.log("saved:", item);
-			r();
-		}, 10)
-	);
+  new Promise((r) =>
+    setTimeout(() => {
+      console.log("saved:", item);
+      r();
+    }, 10),
+  );
 
 root((c) => {
-	const todoList = signal(["buy milk", "write docs"]);
-	c.spawn(async (c) => {
-		const items = c.val(todoList);
-		c.lock();
-		for (const item of items) {
-			await c.suspend(saveToDb(item));
-		}
-		// Lock releases implicitly when the spawn completes.
-		// If todoList changed during the loop, the spawn
-		// re-runs now with the updated list.
-		console.log("batch complete");
-	});
-	// This update is deferred until the current batch finishes
-	todoList.set(["deploy", "celebrate"]);
+  const todoList = signal(["buy milk", "write docs"]);
+  c.spawn(async (c) => {
+    const items = c.val(todoList);
+    c.lock();
+    for (const item of items) {
+      await c.suspend(saveToDb(item));
+    }
+    // Lock releases implicitly when the spawn completes.
+    // If todoList changed during the loop, the spawn
+    // re-runs now with the updated list.
+    console.log("batch complete");
+  });
+  // This update is deferred until the current batch finishes
+  todoList.set(["deploy", "celebrate"]);
 });
 ```
 
@@ -791,13 +789,13 @@ Calling a read method on a list (or any signal/compute holding an array) returns
 ```ts
 import { root, list } from "anod";
 root((c) => {
-	const items = list([1, 2, 3, 4, 5]);
-	const even = items.filter((val) => val % 2 === 0);
-	const doubled = even.map((val) => val * 2);
-	c.effect(doubled, (arr) => {
-		console.log(arr); // [4, 8]
-	});
-	items.push(6); // effect re-runs, prints [4, 8, 12]
+  const items = list([1, 2, 3, 4, 5]);
+  const even = items.filter((val) => val % 2 === 0);
+  const doubled = even.map((val) => val * 2);
+  c.effect(doubled, (arr) => {
+    console.log(arr); // [4, 8]
+  });
+  items.push(6); // effect re-runs, prints [4, 8, 12]
 });
 ```
 
@@ -811,8 +809,8 @@ Every callback-based array method receives the reactive context as the last argu
 import { list } from "anod";
 const items = list([1, 2, 3]);
 const rendered = items.map((val, index, array, c) => {
-	c.cleanup(() => console.log("re-rendering"));
-	return `<li>${val}</li>`;
+  c.cleanup(() => console.log("re-rendering"));
+  return `<li>${val}</li>`;
 });
 console.log(rendered.get()); // ["<li>1</li>", "<li>2</li>", "<li>3</li>"]
 items.push(4); // prints "re-rendering", then updates
@@ -829,9 +827,9 @@ Mutation methods like `push`, `pop`, `splice`, `sort` notify subscribers immedia
 import { list, batch } from "anod";
 const items = list([1, 2, 3]);
 batch(() => {
-	items.push(4);
-	items.push(5);
-	items.shift();
+  items.push(4);
+  items.push(5);
+  items.shift();
 });
 // Subscribers are notified once, seeing [2, 3, 4, 5]
 ```

@@ -1,11 +1,11 @@
-import { rolldown } from 'rolldown';
-import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'fs';
-import { join, basename, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { rolldown } from "rolldown";
+import { writeFileSync, mkdirSync, readdirSync } from "fs";
+import { join, basename, dirname } from "path";
+import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const benchDir = join(__dirname, '..', 'bench', 'reactivity');
-const outDir = join(__dirname, '..', 'bench', 'browser');
+const benchDir = join(__dirname, "..", "bench", "reactivity");
+const outDir = join(__dirname, "..", "bench", "browser");
 
 mkdirSync(outDir, { recursive: true });
 
@@ -50,7 +50,7 @@ export function saveRun(name, raw) {
  * A download button saves the JSON result.
  */
 function html(name, scriptFile) {
-    return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -124,58 +124,60 @@ function html(name, scriptFile) {
 
 // Discover benchmark files
 const benchFiles = readdirSync(benchDir)
-    .filter(f => f.endsWith('.js') && !['compare.js', 'expected.js', 'save-run.js'].includes(f))
-    .map(f => join(benchDir, f));
+  .filter((f) => f.endsWith(".js") && !["compare.js", "expected.js", "save-run.js"].includes(f))
+  .map((f) => join(benchDir, f));
 
 console.log(`Bundling ${benchFiles.length} benchmarks for browser...\n`);
 
 for (const file of benchFiles) {
-    const name = basename(file, '.js');
-    console.log(`  ${name}...`);
+  const name = basename(file, ".js");
+  console.log(`  ${name}...`);
 
-    try {
-        const bundle = await rolldown({
-            input: file,
-            plugins: [{
-                name: 'browser-shims',
-                resolveId(source) {
-                    if (source === './save-run.js' || source.endsWith('/save-run.js')) {
-                        return '\0save-run-browser';
-                    }
-                    /** Stub all node: builtins so they don't leak into the browser bundle */
-                    if (source.startsWith('node:') || source.startsWith('bun:')) {
-                        return '\0runtime-stub:' + source;
-                    }
-                },
-                load(id) {
-                    if (id === '\0save-run-browser') {
-                        return SAVE_RUN_BROWSER;
-                    }
-                    if (id.startsWith('\0runtime-stub:')) {
-                        return 'export default {}; export const cpus = () => []; export const createRequire = () => () => null; export const spawnSync = () => ({ stdout: "" }); export const getHeapStatistics = () => ({});';
-                    }
-                }
-            }],
-        });
-
-        const { output } = await bundle.generate({
-            format: 'esm',
-            codeSplitting: false,
-        });
-
-        const jsFile = `${name}.js`;
-        const htmlFile = `${name}.html`;
-
-        for (const chunk of output) {
-            if (chunk.type === 'chunk') {
-                writeFileSync(join(outDir, jsFile), chunk.code);
+  try {
+    const bundle = await rolldown({
+      input: file,
+      plugins: [
+        {
+          name: "browser-shims",
+          resolveId(source) {
+            if (source === "./save-run.js" || source.endsWith("/save-run.js")) {
+              return "\0save-run-browser";
             }
-        }
+            /** Stub all node: builtins so they don't leak into the browser bundle */
+            if (source.startsWith("node:") || source.startsWith("bun:")) {
+              return "\0runtime-stub:" + source;
+            }
+          },
+          load(id) {
+            if (id === "\0save-run-browser") {
+              return SAVE_RUN_BROWSER;
+            }
+            if (id.startsWith("\0runtime-stub:")) {
+              return 'export default {}; export const cpus = () => []; export const createRequire = () => () => null; export const spawnSync = () => ({ stdout: "" }); export const getHeapStatistics = () => ({});';
+            }
+          },
+        },
+      ],
+    });
 
-        writeFileSync(join(outDir, htmlFile), html(name, jsFile));
-    } catch (err) {
-        console.log(`    FAILED: ${err.message}`);
+    const { output } = await bundle.generate({
+      format: "esm",
+      codeSplitting: false,
+    });
+
+    const jsFile = `${name}.js`;
+    const htmlFile = `${name}.html`;
+
+    for (const chunk of output) {
+      if (chunk.type === "chunk") {
+        writeFileSync(join(outDir, jsFile), chunk.code);
+      }
     }
+
+    writeFileSync(join(outDir, htmlFile), html(name, jsFile));
+  } catch (err) {
+    console.log(`    FAILED: ${err.message}`);
+  }
 }
 
 console.log(`\nDone! Open files in bench/browser/*.html`);

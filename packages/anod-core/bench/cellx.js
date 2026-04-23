@@ -18,9 +18,7 @@ import * as anod from "../../dist/index.js";
 let rand = 0;
 const BATCHED = false;
 const RUNS_PER_TIER = 1000;
-const LAYER_TIERS = [
-  1, 2, 3, 4, 5, 10, 15, 20, 25, 50, 100, 500, 1000
-];
+const LAYER_TIERS = [1, 2, 3, 4, 5, 10, 15, 20, 25, 50, 100, 500, 1000];
 
 async function collectGarbage() {
   return new Promise((resolve) => {
@@ -56,7 +54,7 @@ const SOLUTIONS = [
   [4, -2, 4, 4],
   [-2, -4, 2, 3],
   [4, -2, 4, 4],
-  [-2, -4, 2, 3]
+  [-2, -4, 2, 3],
 ];
 
 /**
@@ -64,9 +62,7 @@ const SOLUTIONS = [
  * @param {number[]} answer
  */
 const isSolution = (layers, answer) => {
-  return answer.every(
-    (_, i) => SOLUTIONS[LAYER_TIERS.indexOf(layers)][i] === _,
-  );
+  return answer.every((_, i) => SOLUTIONS[LAYER_TIERS.indexOf(layers)][i] === _);
 };
 
 async function main() {
@@ -149,9 +145,7 @@ async function main() {
   for (const lib of Object.keys(report)) {
     table.push([
       kleur.magenta(lib),
-      ...report[lib].runs.map((n) =>
-        typeof n === "number" ? n.toFixed(2) : n,
-      ),
+      ...report[lib].runs.map((n) => (typeof n === "number" ? n.toFixed(2) : n)),
     ]);
   }
 
@@ -175,7 +169,7 @@ function runReactively(layers) {
 
   let layer = start;
 
-  for (let i = layers; i--;) {
+  for (let i = layers; i--; ) {
     layer = ((m) => {
       return {
         a: reactive(() => (rand % 2 ? m.b.value : m.c.value)),
@@ -195,11 +189,11 @@ function runReactively(layers) {
     start.d.set(1);
   } else {
     start.a.set(4);
-    end.a.get(), end.b.get(), end.c.get(), end.d.get();
+    (end.a.get(), end.b.get(), end.c.get(), end.d.get());
     start.b.set(3);
-    end.a.get(), end.b.get(), end.c.get(), end.d.get();
+    (end.a.get(), end.b.get(), end.c.get(), end.d.get());
     start.c.set(2);
-    end.a.get(), end.b.get(), end.c.get(), end.d.get();
+    (end.a.get(), end.b.get(), end.c.get(), end.d.get());
     start.d.set(1);
   }
 
@@ -224,7 +218,7 @@ function runMaverick(layers) {
 
     let layer = start;
 
-    for (let i = layers; i--;) {
+    for (let i = layers; i--; ) {
       layer = ((m) => {
         return {
           a: maverick.computed(() => (rand % 2 ? m.b() : m.c())),
@@ -246,13 +240,13 @@ function runMaverick(layers) {
     } else {
       start.a.set(4);
       maverick.tick();
-      end.a(), end.b(), end.c(), end.d();
+      (end.a(), end.b(), end.c(), end.d());
       start.b.set(3);
       maverick.tick();
-      end.a(), end.b(), end.c(), end.d();
+      (end.a(), end.b(), end.c(), end.d());
       start.c.set(2);
       maverick.tick();
-      end.a(), end.b(), end.c(), end.d();
+      (end.a(), end.b(), end.c(), end.d());
       start.d.set(1);
       maverick.tick();
     }
@@ -281,7 +275,7 @@ function runS(layers) {
 
     let layer = start;
 
-    for (let i = layers; i--;) {
+    for (let i = layers; i--; ) {
       layer = ((m) => {
         return {
           a: S(() => (rand % 2 ? m.b() : m.c())),
@@ -303,11 +297,11 @@ function runS(layers) {
       });
     } else {
       start.a(4);
-      end.a(), end.b(), end.c(), end.d();
+      (end.a(), end.b(), end.c(), end.d());
       start.b(3);
-      end.a(), end.b(), end.c(), end.d();
+      (end.a(), end.b(), end.c(), end.d());
       start.c(2);
-      end.a(), end.b(), end.c(), end.d();
+      (end.a(), end.b(), end.c(), end.d());
       start.d(1);
     }
     const solution = [end.a(), end.b(), end.c(), end.d()];
@@ -327,7 +321,7 @@ function runAnod(layers) {
 
   let layer = start;
 
-  for (let i = layers; i--;) {
+  for (let i = layers; i--; ) {
     layer = ((m) => {
       return {
         a: anod.compute(() => (rand % 2 ? m.b.val() : m.c.val()), true),
@@ -349,11 +343,11 @@ function runAnod(layers) {
     });
   } else {
     start.a.set(4);
-    end.a.val(), end.b.val(), end.c.val(), end.d.val();
+    (end.a.val(), end.b.val(), end.c.val(), end.d.val());
     start.b.set(3);
-    end.a.val(), end.b.val(), end.c.val(), end.d.val();
+    (end.a.val(), end.b.val(), end.c.val(), end.d.val());
     start.c.set(2);
-    end.a.val(), end.b.val(), end.c.val(), end.d.val();
+    (end.a.val(), end.b.val(), end.c.val(), end.d.val());
     start.d.set(1);
   }
   const solution = [end.a.val(), end.b.val(), end.c.val(), end.d.val()];
@@ -371,7 +365,7 @@ function runSignal(layers, done) {
 
   let layer = start;
 
-  for (let i = layers; i--;) {
+  for (let i = layers; i--; ) {
     layer = ((m) => {
       return {
         a: new Signal.Computed(() => (rand % 2 ? m.b.get() : m.c.get())),
@@ -391,11 +385,11 @@ function runSignal(layers, done) {
     start.d.set(1);
   } else {
     start.a.set(4);
-    end.a.get(), end.b.get(), end.c.get(), end.d.get();
+    (end.a.get(), end.b.get(), end.c.get(), end.d.get());
     start.b.set(3);
-    end.a.get(), end.b.get(), end.c.get(), end.d.get();
+    (end.a.get(), end.b.get(), end.c.get(), end.d.get());
     start.c.set(2);
-    end.a.get(), end.b.get(), end.c.get(), end.d.get();
+    (end.a.get(), end.b.get(), end.c.get(), end.d.get());
     start.d.set(1);
   }
 
@@ -418,7 +412,7 @@ function runSolid(layers) {
 
     let layer = start;
 
-    for (let i = layers; i--;) {
+    for (let i = layers; i--; ) {
       layer = ((m) => {
         const props = {
           a: solid.createMemo(() => (rand % 2 ? m.b() : m.c())),
@@ -436,12 +430,12 @@ function runSolid(layers) {
 
     if (BATCHED) {
       solid.batch(() => {
-        setA(4), setB(3), setC(2), setD(1);
+        (setA(4), setB(3), setC(2), setD(1));
       });
     } else {
-      setA(4), end.a(), end.b(), end.c(), end.d();
-      setB(3), end.a(), end.b(), end.c(), end.d();
-      setC(2), end.a(), end.b(), end.c(), end.d();
+      (setA(4), end.a(), end.b(), end.c(), end.d());
+      (setB(3), end.a(), end.b(), end.c(), end.d());
+      (setC(2), end.a(), end.b(), end.c(), end.d());
       setD(1);
     }
 
@@ -465,7 +459,7 @@ function runPreact(layers) {
 
   let layer = start;
 
-  for (let i = layers; i--;) {
+  for (let i = layers; i--; ) {
     layer = ((m) => {
       const props = {
         a: preact.computed(() => (rand % 2 ? m.b.value : m.c.value)),
@@ -488,11 +482,11 @@ function runPreact(layers) {
     });
   } else {
     a.value = 4;
-    end.a.value, end.b.value, end.c.value, end.d.value;
+    (end.a.value, end.b.value, end.c.value, end.d.value);
     b.value = 3;
-    end.a.value, end.b.value, end.c.value, end.d.value;
+    (end.a.value, end.b.value, end.c.value, end.d.value);
     c.value = 2;
-    end.a.value, end.b.value, end.c.value, end.d.value;
+    (end.a.value, end.b.value, end.c.value, end.d.value);
     d.value = 1;
   }
   const solution = [end.a.value, end.b.value, end.c.value, end.d.value];
@@ -513,7 +507,7 @@ function runCellx(layers, done) {
 
   let layer = start;
 
-  for (let i = layers; i--;) {
+  for (let i = layers; i--; ) {
     layer = ((m) => {
       const props = {
         a: new cellx.Cell(() => (rand % 2 ? m.b.get() : m.c.get())),
@@ -522,10 +516,10 @@ function runCellx(layers, done) {
         d: new cellx.Cell(() => m.c.get()),
       };
 
-      props.a.on("change", function () { });
-      props.b.on("change", function () { });
-      props.c.on("change", function () { });
-      props.d.on("change", function () { });
+      props.a.on("change", function () {});
+      props.b.on("change", function () {});
+      props.c.on("change", function () {});
+      props.d.on("change", function () {});
 
       return props;
     })(layer);
@@ -539,9 +533,9 @@ function runCellx(layers, done) {
     start.c.set(2);
     start.d.set(1);
   } else {
-    start.a.set(4), end.a.get(), end.b.get(), end.c.get(), end.d.get();
-    start.b.set(3), end.a.get(), end.b.get(), end.c.get(), end.d.get();
-    start.c.set(2), end.a.get(), end.b.get(), end.c.get(), end.d.get();
+    (start.a.set(4), end.a.get(), end.b.get(), end.c.get(), end.d.get());
+    (start.b.set(3), end.a.get(), end.b.get(), end.c.get(), end.d.get());
+    (start.c.set(2), end.a.get(), end.b.get(), end.c.get(), end.d.get());
     start.d.set(1);
   }
 
@@ -566,7 +560,7 @@ function runUsignal(layers) {
 
   let layer = start;
 
-  for (let i = layers; i--;) {
+  for (let i = layers; i--; ) {
     layer = ((m) => {
       const props = {
         a: usignal.computed(() => (rand % 2 ? m.b.value : m.c.value)),
@@ -583,12 +577,12 @@ function runUsignal(layers) {
   const end = layer;
   if (BATCHED) {
     usignal.batch(() => {
-      (a.value = 4), (b.value = 3), (c.value = 2), (d.value = 1);
+      ((a.value = 4), (b.value = 3), (c.value = 2), (d.value = 1));
     });
   } else {
-    (a.value = 4), end.a.value, end.b.value, end.c.value, end.d.value;
-    (b.value = 3), end.a.value, end.b.value, end.c.value, end.d.value;
-    (c.value = 2), end.a.value, end.b.value, end.c.value, end.d.value;
+    ((a.value = 4), end.a.value, end.b.value, end.c.value, end.d.value);
+    ((b.value = 3), end.a.value, end.b.value, end.c.value, end.d.value);
+    ((c.value = 2), end.a.value, end.b.value, end.c.value, end.d.value);
     d.value = 1;
   }
   const solution = [end.a.value, end.b.value, end.c.value, end.d.value];

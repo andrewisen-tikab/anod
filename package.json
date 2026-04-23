@@ -1,23 +1,35 @@
 {
   "name": "anod",
+  "version": "0.5.0",
   "private": "true",
+  "description": "",
+  "keywords": [],
+  "homepage": "https://github.com/visj/anod#readme",
+  "bugs": {
+    "url": "https://github.com/visj/anod/issues"
+  },
+  "license": "MIT",
+  "author": "Vilhelm Sjölund",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/visj/anod.git"
+  },
   "workspaces": [
     "packages/anod-core",
     "packages/anod-list",
     "packages/anod"
   ],
-  "version": "0.5.0",
-  "description": "",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/visj/anod.git"
-  },
-  "keywords": [],
-  "author": "Vilhelm Sjölund",
-  "license": "MIT",
   "type": "module",
-  "bugs": {
-    "url": "https://github.com/visj/anod/issues"
+  "scripts": {
+    "ts": "tsgo -b",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
   },
-  "homepage": "https://github.com/visj/anod#readme"
+  "devDependencies": {
+    "@typescript/native-preview": "^7.0.0-dev.20260421.2",
+    "oxfmt": "^0.46.0",
+    "oxlint": "^1.61.0"
+  }
 }

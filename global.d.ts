@@ -10,7 +10,7 @@ declare global {
    */
   type IObject<KEY extends string | number, VALUE> = {
     [key in KEY]: VALUE;
-  }
+  };
 
   /**
    * IArrayLike extends IObject such that the key is always a number.
@@ -34,7 +34,7 @@ declare global {
      */
     then<RESULT>(
       onFulfilled?: ((value: T) => RESULT | IThenable<RESULT>) | null,
-      onRejected?: ((reason: any) => RESULT | IThenable<RESULT>) | null
+      onRejected?: ((reason: any) => RESULT | IThenable<RESULT>) | null,
     ): IThenable<RESULT>;
   }
 }
