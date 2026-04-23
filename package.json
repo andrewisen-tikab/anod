@@ -21,12 +21,14 @@
   ],
   "type": "module",
   "scripts": {
+    "ts": "tsgo -b",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check"
   },
   "devDependencies": {
+    "@typescript/native-preview": "^7.0.0-dev.20260421.2",
     "oxfmt": "^0.46.0",
     "oxlint": "^1.61.0"
   }
