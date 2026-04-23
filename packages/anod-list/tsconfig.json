@@ -16,9 +16,7 @@
       "anod-core/internal-types": ["../anod-core/src/types.ts"]
     }
   },
-  "references": [
-    { "path": "../anod-core" }
-  ],
+  "references": [{ "path": "../anod-core" }],
   "include": ["src/**/*.ts"],
   "exclude": ["types/**", "test/**"]
 }

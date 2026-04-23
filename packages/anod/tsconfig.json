@@ -15,10 +15,7 @@
       "anod-list": ["../anod-list/src/list.ts"]
     }
   },
-  "references": [
-    { "path": "../anod-core" },
-    { "path": "../anod-list" }
-  ],
+  "references": [{ "path": "../anod-core" }, { "path": "../anod-list" }],
   "include": ["src/**/*.ts"],
   "exclude": ["types/**"]
 }
