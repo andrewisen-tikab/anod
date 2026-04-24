@@ -17,7 +17,8 @@
   "workspaces": [
     "packages/anod-core",
     "packages/anod-list",
-    "packages/anod"
+    "packages/anod",
+    "examples"
   ],
   "type": "module",
   "scripts": {
@@ -25,7 +26,8 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
+    "fmt:check": "oxfmt --check",
+    "dev:examples": "cd examples && bun run dev"
   },
   "devDependencies": {
     "@typescript/native-preview": "^7.0.0-dev.20260421.2",

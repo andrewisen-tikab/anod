@@ -5,3 +5,4 @@ node_modules/
 dist/
 packages/anod-stream
 packages/anod-tools
+.github/prompts/
