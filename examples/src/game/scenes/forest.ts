@@ -8,15 +8,8 @@
  */
 
 import type { GameState } from "../reactive/state.ts";
+import { transitionScene, createOwnedBoundCompute } from "../reactive/engine.ts";
 import {
-  transitionScene,
-  createOwnedBoundCompute,
-  createOwnedCompute,
-  handleInvalidAction,
-  setupErrorRecovery,
-} from "../reactive/engine.ts";
-import {
-  readValue,
   writeValue,
   deferredUpdate,
   forceUIRefresh,
@@ -24,7 +17,6 @@ import {
 } from "../reactive/render.ts";
 import {
   createLazyDangerLevel,
-  createAutoDisposingTooltip,
   createStableClassName,
   enableEqualityCheck,
   readWithTracking,
@@ -55,7 +47,7 @@ export function setupForest(r: any, state: GameState, elements: any): void {
   const dangerLevel = createLazyDangerLevel(r, state);
 
   /** OPT_STABLE — Class name computed once, never changes. */
-  const className = createStableClassName(r, state);
+  const _className = createStableClassName(r, state);
 
   /** Riddle answer tracking signal (owned by chapter root). */
   const riddleAnswer = createOwnedSignal(r, -1);
@@ -76,10 +68,10 @@ export function setupForest(r: any, state: GameState, elements: any): void {
 }
 
 function handleForestEntrance(
-  r: any,
+  _r: any,
   state: GameState,
   elements: any,
-  c: any,
+  _c: any,
   dangerLevel: any,
 ): void {
   const { choicesEl } = elements;
@@ -125,10 +117,10 @@ function handleLumaEncounter(
   r: any,
   state: GameState,
   elements: any,
-  c: any,
+  _c: any,
   riddleAnswer: any,
 ): void {
-  const { choicesEl, narrativeEl } = elements;
+  const { choicesEl, narrativeEl: _narrativeEl } = elements;
   choicesEl.innerHTML = "";
 
   const riddle = getForestRiddle();
@@ -186,7 +178,7 @@ function handleLumaEncounter(
   }
 }
 
-function handleForestPath(r: any, state: GameState, elements: any, c: any): void {
+function handleForestPath(_r: any, state: GameState, elements: any, c: any): void {
   const { choicesEl } = elements;
   choicesEl.innerHTML = "";
 
@@ -225,7 +217,7 @@ function handleForestPath(r: any, state: GameState, elements: any, c: any): void
   choicesEl.appendChild(rightBtn);
 }
 
-function handleForestClearing(r: any, state: GameState, elements: any, c: any): void {
+function handleForestClearing(_r: any, state: GameState, elements: any, _c: any): void {
   const { choicesEl } = elements;
   choicesEl.innerHTML = "";
 
@@ -267,7 +259,7 @@ function handleForestClearing(r: any, state: GameState, elements: any, c: any): 
   choicesEl.appendChild(leaveBtn);
 }
 
-function handleForestExit(r: any, state: GameState, elements: any, c: any): void {
+function handleForestExit(_r: any, state: GameState, elements: any, _c: any): void {
   const { choicesEl } = elements;
   choicesEl.innerHTML = "";
 

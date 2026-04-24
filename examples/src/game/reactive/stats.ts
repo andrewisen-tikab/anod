@@ -9,7 +9,7 @@ import { OPT_STABLE, OPT_DEFER, OPT_WEAK } from "anod";
 import type { GameState } from "./state.ts";
 import { getClassName } from "../data/dialogue.ts";
 import { getItemById } from "../data/items.ts";
-import { TYPE_WEAPON, TYPE_ACCESSORY } from "../data/constants.ts";
+import { TYPE_WEAPON } from "../data/constants.ts";
 
 // ─── Compute Variants ────────────────────────────────────────────────
 

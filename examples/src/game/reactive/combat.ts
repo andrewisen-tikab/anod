@@ -11,7 +11,6 @@ import {
   getWardenStats,
   resolveTurn,
   resolveFlee,
-  isDefeated,
   calculateDamage,
   calculateDefense,
   getCritBonus,
@@ -24,8 +23,6 @@ import {
   ACTION_HEAL,
   ACTION_FLEE,
   ITEM_SMOKE_BOMB,
-  ITEM_HEALTH_POTION,
-  ITEM_GREATER_POTION,
   TYPE_WEAPON,
   TYPE_ACCESSORY,
 } from "../data/constants.ts";
@@ -39,7 +36,7 @@ import { getItemById } from "../data/items.ts";
  * While pending: task.loading === true, UI shows "The Warden materializes..."
  */
 export function createLoadWardenTask(owner: any) {
-  return owner.task(async (c: any) => {
+  return owner.task(async (_c: any) => {
     await simulateThinkingDelay();
     return getWardenStats();
   });
@@ -51,7 +48,7 @@ export function createLoadWardenTask(owner: any) {
  * the task re-runs to resolve the turn.
  */
 export function createCombatTurnTask(owner: any, actionSignal: any, state: GameState) {
-  return owner.task(actionSignal, async (actionValue: number, c: any) => {
+  return owner.task(actionSignal, async (actionValue: number, _c: any) => {
     if (actionValue === 0) {
       return null;
     }
@@ -61,7 +58,7 @@ export function createCombatTurnTask(owner: any, actionSignal: any, state: GameS
 
     const inventory = state.inventory.get();
     const playerClass = state.playerClass.get();
-    const playerHP = state.health.get();
+    const _playerHP = state.health.get();
 
     if (actionValue === ACTION_ATTACK) {
       /** Find player's weapon. */

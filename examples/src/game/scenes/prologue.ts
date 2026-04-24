@@ -9,7 +9,7 @@
 
 import type { GameState } from "../reactive/state.ts";
 import { transitionScene } from "../reactive/engine.ts";
-import { writeValue, functionalUpdate, createTypewriter } from "../reactive/render.ts";
+import { writeValue } from "../reactive/render.ts";
 import { pickUpItem } from "../reactive/inventory.ts";
 import {
   SCENE_ARRIVAL,
@@ -45,7 +45,7 @@ export function setupPrologue(r: any, state: GameState, elements: any): void {
  * Uses signal.set(name) to store the player's name.
  */
 function handleArrival(r: any, state: GameState, elements: any, c: any): void {
-  const { narrativeEl, choicesEl } = elements;
+  const { narrativeEl: _narrativeEl, choicesEl } = elements;
 
   /** Show name input instead of normal choices. */
   choicesEl.innerHTML = "";
@@ -155,7 +155,7 @@ function handleClassSelect(r: any, state: GameState, elements: any, c: any): voi
  * Uses list.push() to add quest to quest log.
  * Auto-advances to market chapter.
  */
-function handleQuestAccept(r: any, state: GameState, elements: any, c: any): void {
+function handleQuestAccept(_r: any, state: GameState, elements: any, c: any): void {
   const { choicesEl } = elements;
   choicesEl.innerHTML = "";
 

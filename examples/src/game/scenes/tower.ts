@@ -9,25 +9,16 @@
 
 import { batch } from "anod";
 import type { GameState } from "../reactive/state.ts";
-import {
-  transitionScene,
-  createOwnedSignal,
-  disposeChapter,
-  createChapterScope,
-  handleCorruption,
-  setupErrorRecovery,
-} from "../reactive/engine.ts";
-import { writeValue, functionalUpdate as renderFunctionalUpdate } from "../reactive/render.ts";
+import { transitionScene, createOwnedSignal, setupErrorRecovery } from "../reactive/engine.ts";
+import { writeValue } from "../reactive/render.ts";
 import {
   createLoadWardenTask,
   createCombatTurnTask,
-  createCombatAnimation,
   createAmbientEvents,
   readTaskLoading,
   readTaskError,
-  checkDisposed,
 } from "../reactive/combat.ts";
-import { pickUpItem, hasAnyHealing } from "../reactive/inventory.ts";
+import { pickUpItem } from "../reactive/inventory.ts";
 import {
   SCENE_TOWER_BASE,
   SCENE_TOWER_ASCENT,
@@ -39,10 +30,6 @@ import {
   SCENE_CREDITS,
   ITEM_TOWER_KEY,
   ITEM_WARDENS_CREST,
-  ITEM_HEALTH_POTION,
-  ITEM_GREATER_POTION,
-  ITEM_STALE_BREAD,
-  ITEM_SMOKE_BOMB,
   ACTION_ATTACK,
   ACTION_HEAL,
   ACTION_FLEE,
@@ -50,7 +37,7 @@ import {
   QUEST_COLLECT_CREST,
 } from "../data/constants.ts";
 import { getWardenStats, isDefeated } from "../data/combat.ts";
-import { getHealingAmount, getItemById } from "../data/items.ts";
+import { getHealingAmount } from "../data/items.ts";
 
 /** Warden HP tracker — lives outside chapter scope for cross-scene access. */
 let wardenHP = 0;
@@ -87,7 +74,7 @@ export function setupTower(r: any, state: GameState, elements: any): void {
   });
 }
 
-function handleTowerBase(r: any, state: GameState, elements: any, c: any): void {
+function handleTowerBase(_r: any, state: GameState, elements: any, _c: any): void {
   const { choicesEl } = elements;
   choicesEl.innerHTML = "";
 
@@ -120,7 +107,7 @@ function handleTowerAscent(
   c: any,
   floorSignal: any,
 ): void {
-  const { choicesEl, narrativeEl } = elements;
+  const { choicesEl, narrativeEl: _narrativeEl } = elements;
   choicesEl.innerHTML = "";
 
   /** spawn(dep, fn) — Bound: ambient events triggered by floor signal. */
@@ -162,7 +149,7 @@ function handleTowerAscent(
   choicesEl.appendChild(skipBtn);
 }
 
-function handleTowerSummit(r: any, state: GameState, elements: any, c: any): void {
+function handleTowerSummit(r: any, state: GameState, elements: any, _c: any): void {
   const { choicesEl } = elements;
   choicesEl.innerHTML = "";
 
@@ -176,7 +163,7 @@ function handleTowerSummit(r: any, state: GameState, elements: any, c: any): voi
   choicesEl.appendChild(loadingEl);
 
   /** Effect that reacts when warden data loads. */
-  r.effect(wardenTask, (stats: any, ec: any) => {
+  r.effect(wardenTask, (stats: any, _ec: any) => {
     loadingEl.remove();
 
     /** task.loading — Check loading state. */
@@ -223,9 +210,9 @@ function handleCombat(
   elements: any,
   c: any,
   actionSignal: any,
-  combatText: any,
+  _combatText: any,
 ): void {
-  const { choicesEl, narrativeEl } = elements;
+  const { choicesEl, narrativeEl: _narrativeEl2 } = elements;
   choicesEl.innerHTML = "";
 
   /** Reset action signal. */
@@ -346,7 +333,7 @@ function handleCombat(
   });
 
   /** Effect that processes combat turn results. */
-  r.effect(turnTask, (result: any, ec: any) => {
+  r.effect(turnTask, (result: any, _ec: any) => {
     if (result === null) {
       return;
     }
@@ -409,7 +396,7 @@ function handleCombat(
   });
 }
 
-function handleVictory(r: any, state: GameState, elements: any, c: any): void {
+function handleVictory(_r: any, state: GameState, elements: any, _c: any): void {
   const { choicesEl } = elements;
   choicesEl.innerHTML = "";
 
@@ -436,7 +423,7 @@ function handleVictory(r: any, state: GameState, elements: any, c: any): void {
   choicesEl.appendChild(btn);
 }
 
-function handleDefeat(r: any, state: GameState, elements: any, c: any): void {
+function handleDefeat(_r: any, state: GameState, elements: any, _c: any): void {
   const { choicesEl } = elements;
   choicesEl.innerHTML = "";
 

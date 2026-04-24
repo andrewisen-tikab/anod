@@ -7,15 +7,12 @@
  */
 
 import type { GameState } from "../reactive/state.ts";
-import { transitionScene, disposeChapter } from "../reactive/engine.ts";
-import { readValue } from "../reactive/render.ts";
-import { toDisplayStrings, calculateTotalWeight } from "../reactive/inventory.ts";
+import { transitionScene } from "../reactive/engine.ts";
 import {
   SCENE_RETURN,
   SCENE_MAREN_FINALE,
   SCENE_SUMMARY,
   SCENE_CREDITS,
-  SCENE_ARRIVAL,
   QUEST_RETURN_MAREN,
 } from "../data/constants.ts";
 import { getQuestName, getClassName } from "../data/dialogue.ts";
@@ -38,7 +35,7 @@ export function setupEpilogue(r: any, state: GameState, elements: any): void {
   });
 }
 
-function handleReturn(r: any, state: GameState, elements: any, c: any): void {
+function handleReturn(_r: any, state: GameState, elements: any, _c: any): void {
   const { choicesEl } = elements;
   choicesEl.innerHTML = "";
 
@@ -55,8 +52,8 @@ function handleReturn(r: any, state: GameState, elements: any, c: any): void {
   choicesEl.appendChild(btn);
 }
 
-function handleMarenFinale(r: any, state: GameState, elements: any, c: any): void {
-  const { choicesEl, narrativeEl } = elements;
+function handleMarenFinale(_r: any, state: GameState, elements: any, _c: any): void {
+  const { choicesEl, narrativeEl: _narrativeEl } = elements;
   choicesEl.innerHTML = "";
 
   /** list.push() — Complete the "Return to Maren" quest. */
@@ -117,7 +114,7 @@ function handleMarenFinale(r: any, state: GameState, elements: any, c: any): voi
   choicesEl.appendChild(btn);
 }
 
-function handleSummary(r: any, state: GameState, elements: any, c: any): void {
+function handleSummary(_r: any, state: GameState, elements: any, _c: any): void {
   const { choicesEl } = elements;
   choicesEl.innerHTML = "";
 
@@ -171,7 +168,7 @@ function handleSummary(r: any, state: GameState, elements: any, c: any): void {
   choicesEl.appendChild(btn);
 }
 
-function handleCredits(r: any, state: GameState, elements: any, c: any): void {
+function handleCredits(_r: any, _state: GameState, elements: any, _c: any): void {
   const { choicesEl } = elements;
   choicesEl.innerHTML = "";
 

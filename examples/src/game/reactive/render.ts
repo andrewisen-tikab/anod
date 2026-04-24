@@ -42,7 +42,7 @@ export function renderHealthBar(
   barEl: HTMLElement,
   textEl: HTMLElement,
 ) {
-  return owner.effect(state.health, (hp: number, c: any) => {
+  return owner.effect(state.health, (hp: number, _c: any) => {
     const maxHp = state.maxHealth.get();
     const pct = maxHp > 0 ? Math.floor((hp / maxHp) * 100) : 0;
     barEl.style.width = pct + "%";

@@ -9,7 +9,7 @@
  */
 
 import type { GameState } from "./state.ts";
-import { getItemById, formatItemName, type Item } from "../data/items.ts";
+import { getItemById, formatItemName } from "../data/items.ts";
 import {
   TYPE_WEAPON,
   TYPE_CONSUMABLE,

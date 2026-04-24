@@ -12,39 +12,24 @@
 import { batch } from "anod";
 import type { GameState } from "../reactive/state.ts";
 import { transitionScene, createOwnedBoundTask, createOwnedSignal } from "../reactive/engine.ts";
-import { writeValue, functionalUpdate, readValue } from "../reactive/render.ts";
+import { functionalUpdate } from "../reactive/render.ts";
 import {
   pickUpItem,
-  discardLastItem,
-  useFirstItem,
-  addPriorityItem,
-  equipItemAtSlot,
   sortByValue,
   reverseOrder,
   clearAllSlots,
-  rearrangeItems,
-  getItemAtSlot,
   mergeWithLoot,
-  iterateWithIndices,
   areAllIdentified,
   getWeapons,
-  findItemById,
-  findItemSlot,
-  findLastPotion,
-  findLastWeaponSlot,
   flattenCategories,
   extractSubItems,
   renderEachItem,
   hasItem,
-  getSlotNumber,
   formatAsText,
-  iterateSlotNumbers,
   toDisplayStrings,
   calculateTotalWeight,
   calculateReversePriority,
-  getPage,
   hasAnyHealing,
-  iterateValues,
 } from "../reactive/inventory.ts";
 import {
   SCENE_MARKET_ENTRANCE,
@@ -53,20 +38,12 @@ import {
   SCENE_MARKET_EXIT,
   SCENE_FOREST_ENTRANCE,
   ITEM_TOWER_KEY,
-  ITEM_HEALTH_POTION,
-  ITEM_GREATER_POTION,
   ITEM_TORCH,
-  ITEM_LOCKPICK_SET,
   ITEM_STALE_BREAD,
-  ITEM_SILVER_AMULET,
-  ITEM_SMOKE_BOMB,
-  ITEM_ENCHANTED_RING,
-  ITEM_ROPE,
-  ITEM_BAG_OF_GEMS,
   QUEST_BUY_SUPPLIES,
   QUEST_ACQUIRE_KEY,
 } from "../data/constants.ts";
-import { getItemById, SHOP_INVENTORY, formatItemName } from "../data/items.ts";
+import { getItemById, SHOP_INVENTORY } from "../data/items.ts";
 import { getMerchantGreeting, getMerchantOffer, simulateThinkingDelay } from "../data/dialogue.ts";
 
 /**
@@ -78,16 +55,16 @@ export function setupMarket(r: any, state: GameState, elements: any): void {
 
   /** Create all reactive list read computes upfront.
    *  These are bound Compute nodes that auto-update when inventory changes. */
-  const weightCompute = calculateTotalWeight(state);
-  const weaponsCompute = getWeapons(state);
-  const displayStrings = toDisplayStrings(state);
+  const _weightCompute = calculateTotalWeight(state);
+  const _weaponsCompute = getWeapons(state);
+  const _displayStrings = toDisplayStrings(state);
   const hasKey = hasItem(state, ITEM_TOWER_KEY);
-  const hasHealing = hasAnyHealing(state);
-  const allIdentified = areAllIdentified(state);
-  const textFormat = formatAsText(state);
-  const reversePriority = calculateReversePriority(state);
-  const flatItems = flattenCategories(state);
-  const subItems = extractSubItems(state);
+  const _hasHealing = hasAnyHealing(state);
+  const _allIdentified = areAllIdentified(state);
+  const _textFormat = formatAsText(state);
+  const _reversePriority = calculateReversePriority(state);
+  const _flatItems = flattenCategories(state);
+  const _subItems = extractSubItems(state);
 
   r.effect(state.currentScene, (sceneId: number, c: any) => {
     if (sceneId === SCENE_MARKET_ENTRANCE) {
@@ -102,12 +79,12 @@ export function setupMarket(r: any, state: GameState, elements: any): void {
   });
 }
 
-function handleMarketEntrance(r: any, state: GameState, elements: any, c: any): void {
+function handleMarketEntrance(_r: any, state: GameState, elements: any, _c: any): void {
   const { choicesEl } = elements;
   choicesEl.innerHTML = "";
 
   const gold = state.gold.get();
-  const greeting = getMerchantGreeting(gold);
+  const _greeting = getMerchantGreeting(gold);
   const log = state.gameLog.get();
   log.push("Entered Thornwick Market.");
   state.gameLog.set(log);
@@ -126,7 +103,7 @@ function handleMarketEntrance(r: any, state: GameState, elements: any, c: any): 
   }
 }
 
-function handleGritShop(r: any, state: GameState, elements: any, c: any, shopPage: any): void {
+function handleGritShop(_r: any, state: GameState, elements: any, _c: any, _shopPage: any): void {
   const { choicesEl } = elements;
   choicesEl.innerHTML = "";
 
@@ -293,12 +270,12 @@ function handleGritShop(r: any, state: GameState, elements: any, c: any, shopPag
   choicesEl.appendChild(navRow);
 }
 
-function handleGritHaggle(r: any, state: GameState, elements: any, c: any): void {
+function handleGritHaggle(r: any, state: GameState, elements: any, _c: any): void {
   const { choicesEl } = elements;
   choicesEl.innerHTML = "";
 
   /** task(dep, fn) — Bound async: Grit's response depends on player's gold. */
-  const haggleTask = createOwnedBoundTask(r, state.gold, async (gold: number, tc: any) => {
+  const haggleTask = createOwnedBoundTask(r, state.gold, async (gold: number, _tc: any) => {
     await simulateThinkingDelay();
     const item = getItemById(ITEM_TOWER_KEY);
     if (item === undefined) {
@@ -314,7 +291,7 @@ function handleGritHaggle(r: any, state: GameState, elements: any, c: any): void
   choicesEl.appendChild(loadingEl);
 
   /** Effect that renders Grit's response when the task resolves. */
-  r.effect(haggleTask, (result: any, ec: any) => {
+  r.effect(haggleTask, (result: any, _ec: any) => {
     loadingEl.remove();
     if (result === null) {
       return;
@@ -364,7 +341,7 @@ function handleGritHaggle(r: any, state: GameState, elements: any, c: any): void
     bonusBtn.addEventListener("click", () => {
       /** concat() — Merge bonus loot with inventory. */
       const bonusLoot = [ITEM_STALE_BREAD, ITEM_TORCH];
-      const merged = mergeWithLoot(state, bonusLoot);
+      const _merged = mergeWithLoot(state, bonusLoot);
       /** Actually add via push. */
       for (let i = 0; i < bonusLoot.length; i++) {
         pickUpItem(state, bonusLoot[i]);
@@ -384,10 +361,10 @@ function handleGritHaggle(r: any, state: GameState, elements: any, c: any): void
 }
 
 function handleMarketExit(
-  r: any,
+  _r: any,
   state: GameState,
   elements: any,
-  c: any,
+  _c: any,
   hasKeyCompute: any,
 ): void {
   const { choicesEl } = elements;

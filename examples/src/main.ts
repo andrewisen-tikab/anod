@@ -19,18 +19,7 @@ import {
   renderChapterName,
   renderScene,
 } from "./game/reactive/render.ts";
-import {
-  createStatusText,
-  createHealthBarWidth,
-  createHealthBarColor,
-} from "./game/reactive/stats.ts";
-import {
-  createAutoSave,
-  loadSave,
-  restoreState,
-  deleteSave,
-  hasSave,
-} from "./game/reactive/save.ts";
+import { createAutoSave, loadSave, restoreState, deleteSave } from "./game/reactive/save.ts";
 import { createShareButton } from "./game/reactive/share.ts";
 import { setupPrologue } from "./game/scenes/prologue.ts";
 import { setupMarket } from "./game/scenes/market.ts";
@@ -38,14 +27,7 @@ import { setupForest } from "./game/scenes/forest.ts";
 import { setupTower } from "./game/scenes/tower.ts";
 import { setupEpilogue } from "./game/scenes/epilogue.ts";
 import { getChapterForScene } from "./game/data/scenes.ts";
-import {
-  SCENE_ARRIVAL,
-  CH_PROLOGUE,
-  CH_MARKET,
-  CH_FOREST,
-  CH_TOWER,
-  CH_EPILOGUE,
-} from "./game/data/constants.ts";
+import { CH_PROLOGUE, CH_MARKET, CH_FOREST, CH_TOWER, CH_EPILOGUE } from "./game/data/constants.ts";
 
 /** Build the game DOM structure. */
 function createGameDOM(): {
@@ -169,13 +151,13 @@ function startGame(): void {
       createAutoSave(r, state);
 
       /** Render the current scene (text + choices). */
-      renderScene(r, state, elements.narrativeEl, elements.choicesEl, (sceneId, choiceIndex) => {
+      renderScene(r, state, elements.narrativeEl, elements.choicesEl, (sceneId, _choiceIndex) => {
         transitionScene(state, sceneId);
       });
 
       /** Set up chapter scoping — watch for chapter changes. */
       let currentChapterId = -1;
-      r.effect(state.chapter, (chapterId: number, c: any) => {
+      r.effect(state.chapter, (chapterId: number, _c: any) => {
         if (chapterId === currentChapterId) {
           return;
         }

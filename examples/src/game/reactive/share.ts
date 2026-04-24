@@ -9,7 +9,6 @@ import type { GameState } from "./state.ts";
 import { getChapterName } from "../data/scenes.ts";
 import { formatItemName } from "../data/items.ts";
 import { renderProgressCard, formatInventorySummary } from "../data/share.ts";
-import { getClassName } from "../data/dialogue.ts";
 
 /**
  * effect(dep, fn) — Bound effect that updates the share button label.
