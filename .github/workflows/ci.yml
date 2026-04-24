@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [master, next]
+    paths-ignore:
+      - "**/*.md"
+      - LICENSE
+
+jobs:
+  lint-and-format:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run lint
+      - run: bun run fmt:check
+
+  core:
+    name: Core – Build & Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: cd packages/anod-core && bun run make
+      - run: cd packages/anod-core && bun test
+
+  list:
+    name: List – Build & Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: cd packages/anod-core && bun run make
+      - run: cd packages/anod-list && bun run make
+      - run: cd packages/anod-list && bun test
+
+  anod:
+    name: Anod – Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: cd packages/anod-core && bun run make
+      - run: cd packages/anod-list && bun run make
+      - run: cd packages/anod && bun run make
+
+  example:
+    name: Example – Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: cd packages/anod-core && bun run make
+      - run: cd packages/anod-list && bun run make
+      - run: cd packages/anod && bun run make
+      - run: cd examples && bun run build
