@@ -10,6 +10,59 @@ import { getScene } from "../data/scenes.ts";
 import { getChapterName } from "../data/scenes.ts";
 import { getTypingDelay } from "../data/dialogue.ts";
 
+// ─── Narrative Formatter ─────────────────────────────────────────────
+
+/**
+ * Escape HTML special characters to prevent XSS.
+ * Only the four dangerous characters need escaping for text content.
+ */
+function escapeHtml(text: string): string {
+	return text
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;");
+}
+
+/**
+ * Format narrative text into styled HTML.
+ * Splits on double newlines into paragraphs.
+ * Lines starting with `> ` become blockquotes (dialogue).
+ * Single newlines within a paragraph become `<br>`.
+ */
+function formatNarrative(text: string): string {
+	const paragraphs = text.split("\n\n");
+	let html = "";
+	for (let i = 0; i < paragraphs.length; i++) {
+		const para = paragraphs[i].trim();
+		if (para.length === 0) {
+			continue;
+		}
+		/** Check if all lines in this paragraph are blockquotes. */
+		const lines = para.split("\n");
+		let allQuotes = true;
+		for (let j = 0; j < lines.length; j++) {
+			if (!lines[j].startsWith("> ")) {
+				allQuotes = false;
+				break;
+			}
+		}
+		if (allQuotes) {
+			html += "<blockquote>";
+			for (let j = 0; j < lines.length; j++) {
+				if (j > 0) {
+					html += "<br>";
+				}
+				html += escapeHtml(lines[j].slice(2));
+			}
+			html += "</blockquote>";
+		} else {
+			html += "<p>" + escapeHtml(para).replace(/\n/g, "<br>") + "</p>";
+		}
+	}
+	return html;
+}
+
 // ─── Effect Variants ─────────────────────────────────────────────────
 
 /**
@@ -218,7 +271,7 @@ export function renderScene(
 
 		/** Clear previous content. */
 		choicesEl.innerHTML = "";
-		narrativeEl.textContent = "";
+		narrativeEl.innerHTML = "";
 
 		/** Track whether the typewriter has been skipped/completed. */
 		let done = false;
@@ -228,21 +281,24 @@ export function renderScene(
 				return;
 			}
 			done = true;
-			narrativeEl.textContent = scene.text;
+			narrativeEl.innerHTML = formatNarrative(scene.text);
 			renderChoices(c, state, scene.choices, choicesEl, onChoice);
 		};
 
-		/** Typewriter for scene text — use an AbortController so we can cancel it. */
+		/**
+		 * Typewriter for scene text — types character-by-character,
+		 * rendering the accumulated substring as formatted HTML each tick.
+		 */
 		const ctrl = new AbortController();
 		const typewrite = async () => {
-			let accumulated = "";
-			for (let i = 0; i < scene.text.length; i++) {
+			for (let i = 1; i <= scene.text.length; i++) {
 				if (ctrl.signal.aborted) {
 					return;
 				}
-				accumulated += scene.text[i];
-				narrativeEl.textContent = accumulated;
-				const delay = getTypingDelay(scene.text[i]);
+				narrativeEl.innerHTML = formatNarrative(scene.text.slice(0, i));
+				/** Scroll to bottom as text grows. */
+				narrativeEl.scrollTop = narrativeEl.scrollHeight;
+				const delay = getTypingDelay(scene.text[i - 1]);
 				await new Promise((resolve) => setTimeout(resolve, delay));
 			}
 			showFull();
