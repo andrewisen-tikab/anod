@@ -129,6 +129,24 @@ body {
 
 .narrative p {
   margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.narrative p:last-child {
+  margin-bottom: 0;
+}
+
+.narrative blockquote {
+  border-left: 3px solid var(--amber);
+  margin: 8px 0 12px 0;
+  padding: 6px 12px;
+  color: var(--amber);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.narrative blockquote:last-child {
+  margin-bottom: 0;
 }
 
 /* ─── Choices Panel ─── */
